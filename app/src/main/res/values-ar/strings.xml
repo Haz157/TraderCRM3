@@ -1,0 +1,184 @@
+<resources>
+
+    <string name="app_name">إدارة المزارع</string>
+
+    <!-- Main Screen -->
+    <string name="title_farm_management">إدارة المزارع</string>
+    <string name="tab_farms">المزارع</string>
+    <string name="tab_customers">العملاء</string>
+    <string name="tab_safes">الخزن</string>
+    <string name="tab_invoices">الفواتير</string>
+    <string name="tab_receives">التحصيلات</string>
+    <string name="content_description_add">إضافة</string>
+
+    <!-- Safe -->
+    <string name="title_add_safe">إضافة خزنة</string>
+    <string name="title_edit_safe">تعديل خزنة</string>
+    <string name="label_safe_name">اسم الخزنة *</string>
+    <string name="button_add_safe">إضافة خزنة</string>
+    <string name="message_no_safes">لا توجد خزن</string>
+    <string name="error_safe_name_required">اسم الخزنة مطلوب</string>
+    <string name="error_safe_name_exists">اسم الخزنة موجود بالفعل</string>
+
+    <!-- Invoice -->
+    <string name="title_add_invoice">إضافة فاتورة</string>
+    <string name="title_edit_invoice">تعديل فاتورة</string>
+    <string name="label_invoice_date">تاريخ الفاتورة *</string>
+    <string name="label_discount_amount">قيمة الخصم</string>
+    <string name="label_addition_amount">قيمة الإضافة</string>
+    <string name="label_price">السعر</string>
+    <string name="label_empty_weight">الوزن الفارغ</string>
+    <string name="label_gross_weight">الوزن الإجمالي</string>
+    <string name="label_crate_count">عدد الأقفاص</string>
+    <string name="label_total_empty_weight">إجمالي الوزن الفارغ</string>
+    <string name="label_total_gross_weight">إجمالي الوزن الإجمالي</string>
+    <string name="label_net_weight">الوزن الصافي</string>
+    <string name="label_total_price">إجمالي السعر</string>
+    <string name="label_total_invoice">إجمالي الفاتورة</string>
+    <string name="button_add_invoice">إضافة فاتورة</string>
+    <string name="message_no_invoices">لا توجد فواتير</string>
+    <string name="error_invoice_date_required">تاريخ الفاتورة مطلوب</string>
+    <string name="error_invoice_date_invalid">تاريخ الفاتورة يجب أن يكون داخل فترة الدورة</string>
+    <string name="error_empty_weight_required">يرجى إدخال وزن فارغ واحد على الأقل</string>
+    <string name="error_gross_weight_required">يرجى إدخال وزن إجمالي واحد على الأقل</string>
+
+    <!-- Receive -->
+    <string name="title_add_receive">إضافة تحصيل</string>
+    <string name="title_edit_receive">تعديل تحصيل</string>
+    <string name="label_receive_amount">قيمة التحصيل</string>
+    <string name="label_current_balance">الرصيد الحالي</string>
+    <string name="label_new_balance">الرصيد الجديد</string>
+    <string name="button_add_receive">إضافة تحصيل</string>
+    <string name="message_no_receives">لا توجد عمليات تحصيل</string>
+    <string name="error_receive_amount_required">قيمة التحصيل مطلوبة</string>
+    <string name="error_customer_required">يرجى اختيار عميل</string>
+
+    <!-- Status -->
+    <string name="status_blocked">محظور</string>
+    <string name="status_active">نشط</string>
+    <string name="status_inactive">غير نشط</string>
+
+    <!-- Customer Card -->
+    <string name="label_phone">الهاتف: %1$s</string>
+    <string name="label_balance">الرصيد: %1$s</string>
+
+    <!-- Farm Detail -->
+    <string name="title_add_farm">إضافة مزرعة</string>
+    <string name="title_edit_farm">تعديل مزرعة</string>
+    <string name="label_farm_name">اسم المزرعة *</string>
+    <string name="label_farm_notes">ملاحظات</string>
+    <string name="label_status">الحالة: %1$s</string>
+    <string name="button_save_changes">حفظ التعديلات</string>
+    <string name="button_add_farm">إضافة مزرعة</string>
+    <string name="section_cycles">الدورات</string>
+    <string name="button_add_cycle">+ إضافة دورة</string>
+    <string name="message_no_cycles">لا توجد دورات</string>
+
+    <!-- Cycle Detail -->
+    <string name="title_add_cycle">إضافة دورة</string>
+    <string name="title_edit_cycle">تعديل دورة</string>
+    <string name="label_cycle_name">اسم الدورة *</string>
+    <string name="label_start_date">تاريخ البداية *</string>
+    <string name="label_end_date">تاريخ النهاية *</string>
+    <string name="content_description_select_date">اختيار التاريخ</string>
+
+    <!-- Customer Detail -->
+    <string name="title_add_customer">إضافة عميل</string>
+    <string name="title_edit_customer">تعديل عميل</string>
+    <string name="label_customer_name">اسم العميل *</string>
+    <string name="label_opening_balance">الرصيد الافتتاحي</string>
+    <string name="label_phone_number">رقم الهاتف</string>
+    <string name="label_address">العنوان</string>
+    <string name="label_notes">ملاحظات</string>
+    <string name="button_add_customer">إضافة عميل</string>
+
+    <!-- Navigation -->
+    <string name="content_description_back">رجوع</string>
+    <string name="content_description_menu">القائمة</string>
+    <string name="content_description_search">بحث</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_title_alert">تنبيه</string>
+    <string name="dialog_button_ok">موافق</string>
+
+    <!-- Validation -->
+    <string name="error_farm_name_required">اسم المزرعة مطلوب</string>
+    <string name="error_cycle_name_required">اسم الدورة مطلوب</string>
+    <string name="error_dates_required">تاريخ البداية والنهاية مطلوبان</string>
+    <string name="error_start_date_after_end">يجب أن يكون تاريخ البداية قبل تاريخ النهاية</string>
+    <string name="error_customer_name_required">اسم العميل مطلوب</string>
+    <string name="error_date_overlap">يوجد تعارض في التواريخ مع دورة أخرى</string>
+    <string name="message_cycle_added">تمت إضافة الدورة بنجاح</string>
+    <string name="message_cycle_updated">تم تعديل الدورة بنجاح</string>
+
+    <!-- Errors -->
+    <string name="error_customer_name_exists">اسم العميل موجود بالفعل</string>
+    <string name="error_farm_name_exists">اسم المزرعة موجود بالفعل</string>
+    <string name="error_invalid_decimal">يرجى إدخال رقم عشري صحيح (بحد أقصى %1$d منازل عشرية)</string>
+    <!-- أزرار عامة -->
+    <string name="button_add">إضافة</string>
+    <string name="button_cancel">إلغاء</string>
+
+    <!-- الفاتورة -->
+    <string name="label_weight_kg">الوزن (كجم)</string>
+
+    <!-- ViewModels Arabic Strings -->
+
+    <!-- SaleInvoiceViewModel -->
+    <string name="error_block_invoice">خطأ في حظر الفاتورة: %1$s</string>
+    <string name="error_unblock_invoice">خطأ في إلغاء حظر الفاتورة: %1$s</string>
+    <string name="error_update_invoice_status">خطأ في تحديث حالة الفاتورة: %1$s</string>
+    <string name="error_select_farm">يرجى اختيار المزرعة</string>
+    <string name="error_select_cycle">يرجى اختيار الدورة</string>
+    <string name="error_select_customer_invoice">يرجى اختيار العميل</string>
+    <string name="error_select_safe">يرجى اختيار الخزنة</string>
+    <string name="error_select_invoice_date">يرجى اختيار تاريخ الفاتورة</string>
+    <string name="error_invoice_date_out_of_cycle">تاريخ الفاتورة يجب أن يكون داخل فترة الدورة</string>
+    <string name="error_add_empty_weight">يرجى إدخال وزن فارغ واحد على الأقل</string>
+    <string name="error_add_gross_weight">يرجى إدخال وزن إجمالي واحد على الأقل</string>
+    <string name="error_create_invoice">خطأ في إنشاء الفاتورة: %1$s</string>
+
+    <!-- SafeViewModel -->
+    <string name="error_safe_name_exists_ar">اسم الخزنة موجود بالفعل</string>
+    <string name="success_add_safe">تم إضافة الخزنة بنجاح</string>
+    <string name="error_add_safe">خطأ في إضافة الخزنة: %1$s</string>
+    <string name="success_update_safe">تم تعديل الخزنة بنجاح</string>
+    <string name="error_update_safe">خطأ في تعديل الخزنة: %1$s</string>
+    <string name="error_update_safe_status">خطأ في تحديث حالة الخزنة: %1$s</string>
+
+    <!-- ReceiveViewModel -->
+    <string name="error_select_customer_receive">يرجى اختيار عميل</string>
+    <string name="error_invalid_receive_amount">يرجى إدخال قيمة تحصيل صحيحة</string>
+    <string name="error_create_receive">خطأ في إنشاء التحصيل: %1$s</string>
+    <string name="error_update_receive_status">خطأ في تحديث حالة التحصيل: %1$s</string>
+
+    <!-- CycleViewModel -->
+    <string name="error_cycle_dates_overlap">يوجد تداخل في التواريخ مع دورة أخرى</string>
+    <string name="success_add_cycle">تم إضافة الدورة بنجاح</string>
+    <string name="success_update_cycle">تم تحديث الدورة بنجاح</string>
+
+    <!-- UI Strings - SaleInvoiceDetailScreen -->
+    <string name="label_farm">المزرعة</string>
+    <string name="placeholder_select_farm">اختر المزرعة</string>
+    <string name="label_cycle">الدورة</string>
+    <string name="placeholder_select_cycle">اختر الدورة</string>
+    <string name="label_customer">العميل</string>
+    <string name="placeholder_select_customer">اختر العميل</string>
+    <string name="label_safe">الخزنة</string>
+    <string name="placeholder_select_safe">اختر الخزنة</string>
+    <string name="placeholder_select_date">اختر التاريخ</string>
+    <string name="section_amounts">المبالغ</string>
+    <string name="section_weights">الأوزان</string>
+    <string name="label_tab_empty">فارغ</string>
+    <string name="label_tab_gross">إجمالي</string>
+    <string name="section_summary">الملخص</string>
+    <string name="format_weight_kg">%1$s كجم</string>
+    <string name="format_weight_count_crates">%1$s كجم × %2$s قفص</string>
+    <string name="content_description_delete">حذف</string>
+
+    <!-- UI Strings - InvoiceDialogs -->
+    <string name="label_invoice_number">فاتورة رقم %1$s</string>
+    <string name="label_receive_amount_with_value">قيمة التحصيل: %1$s</string>
+    <string name="placeholder_amount">0.00</string>
+    <string name="button_save">حفظ</string>
+</resources>

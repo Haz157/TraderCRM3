@@ -1,0 +1,183 @@
+<resources>
+
+    <string name="app_name">Farm Management</string>
+
+    <!-- Main Screen -->
+    <string name="title_farm_management">Farm Management</string>
+    <string name="tab_farms">Farms</string>
+    <string name="tab_customers">Customers</string>
+    <string name="tab_safes">Safes</string>
+    <string name="tab_invoices">Invoices</string>
+    <string name="tab_receives">Receives</string>
+    <string name="content_description_add">Add</string>
+
+    <!-- Safe -->
+    <string name="title_add_safe">Add Safe</string>
+    <string name="title_edit_safe">Edit Safe</string>
+    <string name="label_safe_name">Safe Name *</string>
+    <string name="button_add_safe">Add Safe</string>
+    <string name="message_no_safes">No safes available</string>
+    <string name="error_safe_name_required">Safe name is required</string>
+    <string name="error_safe_name_exists">Safe name already exists</string>
+
+    <!-- Invoice -->
+    <string name="title_add_invoice">Add Invoice</string>
+    <string name="title_edit_invoice">Edit Invoice</string>
+    <string name="label_invoice_date">Invoice Date *</string>
+    <string name="label_discount_amount">Discount Amount</string>
+    <string name="label_addition_amount">Additional Charges</string>
+    <string name="label_price">Price</string>
+    <string name="label_empty_weight">Empty Weight</string>
+    <string name="label_gross_weight">Gross Weight</string>
+    <string name="label_crate_count">Crate Count</string>
+    <string name="label_total_empty_weight">Total Empty Weight</string>
+    <string name="label_total_gross_weight">Total Gross Weight</string>
+    <string name="label_net_weight">Net Weight</string>
+    <string name="label_total_price">Total Price</string>
+    <string name="label_total_invoice">Total Invoice</string>
+    <string name="button_add_invoice">Add Invoice</string>
+    <string name="message_no_invoices">No invoices available</string>
+    <string name="error_invoice_date_required">Invoice date is required</string>
+    <string name="error_invoice_date_invalid">Invoice date must be within the cycle period</string>
+    <string name="error_empty_weight_required">Please add at least one empty weight</string>
+    <string name="error_gross_weight_required">Please add at least one gross weight</string>
+
+    <!-- Receive -->
+    <string name="title_add_receive">Add Receive</string>
+    <string name="title_edit_receive">Edit Receive</string>
+    <string name="label_receive_amount">Receive Amount</string>
+    <string name="label_current_balance">Current Balance</string>
+    <string name="label_new_balance">New Balance</string>
+    <string name="button_add_receive">Add Receive</string>
+    <string name="message_no_receives">No receives available</string>
+    <string name="error_receive_amount_required">Receive amount is required</string>
+    <string name="error_customer_required">Please select a customer</string>
+
+    <!-- Status -->
+    <string name="status_blocked">Blocked</string>
+    <string name="status_active">Active</string>
+    <string name="status_inactive">Inactive</string>
+
+    <!-- Customer Card -->
+    <string name="label_phone">Phone: %1$s</string>
+    <string name="label_balance">Balance: %1$s</string>
+
+    <!-- Farm Detail -->
+    <string name="title_add_farm">Add Farm</string>
+    <string name="title_edit_farm">Edit Farm</string>
+    <string name="label_farm_name">Farm Name *</string>
+    <string name="label_farm_notes">Notes</string>
+    <string name="label_status">Status: %1$s</string>
+    <string name="button_save_changes">Save Changes</string>
+    <string name="button_add_farm">Add Farm</string>
+    <string name="section_cycles">Cycles</string>
+    <string name="button_add_cycle">+ Add Cycle</string>
+    <string name="message_no_cycles">No cycles available</string>
+
+    <!-- Cycle Detail -->
+    <string name="title_add_cycle">Add Cycle</string>
+    <string name="title_edit_cycle">Edit Cycle</string>
+    <string name="label_cycle_name">Cycle Name *</string>
+    <string name="label_start_date">Start Date *</string>
+    <string name="label_end_date">End Date *</string>
+    <string name="content_description_select_date">Select Date</string>
+
+    <!-- Customer Detail -->
+    <string name="title_add_customer">Add Customer</string>
+    <string name="title_edit_customer">Edit Customer</string>
+    <string name="label_customer_name">Customer Name *</string>
+    <string name="label_opening_balance">Opening Balance</string>
+    <string name="label_phone_number">Phone Number</string>
+    <string name="label_address">Address</string>
+    <string name="label_notes">Notes</string>
+    <string name="button_add_customer">Add Customer</string>
+
+    <!-- Navigation -->
+    <string name="content_description_back">Back</string>
+    <string name="content_description_menu">Menu</string>
+    <string name="content_description_search">Search</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_title_alert">Alert</string>
+    <string name="dialog_button_ok">OK</string>
+
+    <!-- Validation -->
+    <string name="error_farm_name_required">Farm name is required</string>
+    <string name="error_cycle_name_required">Cycle name is required</string>
+    <string name="error_dates_required">Start and end dates are required</string>
+    <string name="error_start_date_after_end">Start date must be before end date</string>
+    <string name="error_customer_name_required">Customer name is required</string>
+    <string name="error_date_overlap">Date overlaps with another cycle</string>
+    <string name="message_cycle_added">Cycle added successfully</string>
+    <string name="message_cycle_updated">Cycle updated successfully</string>
+
+    <!-- Errors -->
+    <string name="error_customer_name_exists">Customer name already exists</string>
+    <string name="error_farm_name_exists">Farm name already exists</string>
+    <string name="error_invalid_decimal">Please enter a valid decimal number (max %1$d decimals)</string>
+
+    <!-- ViewModels Arabic Strings -->
+    <!-- SaleInvoiceViewModel -->
+    <string name="error_block_invoice">Error blocking invoice: %1$s</string>
+    <string name="error_unblock_invoice">Error unblocking invoice: %1$s</string>
+    <string name="error_update_invoice_status">Error updating invoice status: %1$s</string>
+    <string name="error_select_farm">Please select a farm</string>
+    <string name="error_select_cycle">Please select a cycle</string>
+    <string name="error_select_customer_invoice">Please select a customer</string>
+    <string name="error_select_safe">Please select a safe</string>
+    <string name="error_select_invoice_date">Please select an invoice date</string>
+    <string name="error_invoice_date_out_of_cycle">Invoice date must be within the cycle period</string>
+    <string name="error_add_empty_weight">Please add at least one empty weight</string>
+    <string name="error_add_gross_weight">Please add at least one gross weight</string>
+    <string name="error_create_invoice">Error creating invoice: %1$s</string>
+
+    <!-- SafeViewModel -->
+    <string name="error_safe_name_exists_ar">Safe name already exists</string>
+    <string name="success_add_safe">Safe added successfully</string>
+    <string name="error_add_safe">Error adding safe: %1$s</string>
+    <string name="success_update_safe">Safe updated successfully</string>
+    <string name="error_update_safe">Error updating safe: %1$s</string>
+    <string name="error_update_safe_status">Error updating safe status: %1$s</string>
+
+    <!-- ReceiveViewModel -->
+    <string name="error_select_customer_receive">Please select a customer</string>
+    <string name="error_invalid_receive_amount">Please enter a valid receive amount</string>
+    <string name="error_create_receive">Error creating receive: %1$s</string>
+    <string name="error_update_receive_status">Error updating receive status: %1$s</string>
+
+    <!-- CycleViewModel -->
+    <string name="error_cycle_dates_overlap">Dates overlap with another cycle</string>
+    <string name="success_add_cycle">Cycle added successfully</string>
+    <string name="success_update_cycle">Cycle updated successfully</string>
+
+    <!-- UI Strings - SaleInvoiceDetailScreen -->
+    <string name="label_farm">Farm</string>
+    <string name="placeholder_select_farm">Select Farm</string>
+    <string name="label_cycle">Cycle</string>
+    <string name="placeholder_select_cycle">Select Cycle</string>
+    <string name="label_customer">Customer</string>
+    <string name="placeholder_select_customer">Select Customer</string>
+    <string name="label_safe">Safe</string>
+    <string name="placeholder_select_safe">Select Safe</string>
+    <string name="placeholder_select_date">Select Date</string>
+    <string name="section_amounts">Amounts</string>
+    <string name="section_weights">Weights</string>
+    <string name="label_tab_empty">Empty</string>
+    <string name="label_tab_gross">Gross</string>
+    <string name="section_summary">Summary</string>
+    <string name="format_weight_kg">%1$s kg</string>
+    <string name="format_weight_count_crates">%1$s kg × %2$s crates</string>
+    <string name="content_description_delete">Delete</string>
+
+    <!-- UI Strings - InvoiceDialogs -->
+    <string name="label_invoice_number">Invoice #%1$s</string>
+    <string name="label_receive_amount_with_value">Receive amount: %1$s</string>
+    <string name="placeholder_amount">0.00</string>
+    <string name="button_save">Save</string>
+    <!-- Common Buttons -->
+    <string name="button_add">Add</string>
+    <string name="button_cancel">Cancel</string>
+
+    <!-- Invoice Extra -->
+    <string name="label_weight_kg">Weight (kg)</string>
+</resources>
