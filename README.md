@@ -54,7 +54,10 @@ cycle id
 invDate
 custid
 safe id
-recive amount : inital value 0 
+recive amount : inital value 0 القيمة المتحصله 
+discount : الخصم مع الفاتورة
+addition : الاضافه مع الفاتورة
+total invoice  = tail.totalprice + addition - discount - reciveamount المتبقي من الفاتورة
 هعرض للمستخدم 
 اسم العميل اسم المزرعه بعد م بيختارها برجعله بدورات المورعه دي 
 لازم تاريخ الفاتورة يبقي داخل تاريخ الدورة لا قبل ولا بعد
@@ -71,8 +74,14 @@ totalempWeight --- مجموع الوزن الفارغ دائما موجب
 totalGrossWeight --- مجموع الوزن القائم دائما موجب
 netweight = totalGrossWeight - totalempWeight دائما موجب
 price دائما موجب inital value 0
-totalInvoice = price * netweight
+totalprice = price * netweight
 -----------------------------------------
-recive tbl
-جدول المتحصلات
-
+recive tbl   جدول المتحصلات من العملاء
+id 
+custid معرف العميل 
+recive : decinal القيمة المتحصله
+discount : decimal
+note : ملاحظات
+في الشاشه تظهر اسم العميل 
+هيبقي ف الصيد السابق للعميل و الرصيد بعد العملية ف شاشه التحصيلات 
+ولكن بعد م نعمل تاسك حساب رصيد العميل 
