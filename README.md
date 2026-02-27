@@ -38,4 +38,41 @@
 6-note ملاحظات 
 7-blocked حاله العميل محظور ولا نشط 
 ------------------------------------------------------------------
+الخزن والبنوك
+@Entity (tableName : "safetbl")
+1-id : string autogenrate معرف الخزنة مفتاح رئيسي
+2-name  اسم الخزنة
+3-balance الرصيد الافتتاحي وبيقبل قيم سالبه
+4-note ملاحظات 
+5-blocked حاله الخزنة محظور ولا نشط 
+------------------------------------------------------------------
+sale invoice فاتورة البيع
+header & body & tail
+header info 
+farm id
+cycle id
+invDate
+custid
+safe id
+recive amount : inital value 0 
+هعرض للمستخدم 
+اسم العميل اسم المزرعه بعد م بيختارها برجعله بدورات المورعه دي 
+لازم تاريخ الفاتورة يبقي داخل تاريخ الدورة لا قبل ولا بعد
+مينفعش ابيع قبل الدورة ولا بعد الدورة
+بخليه يختار تاريخ الفاتورة
+بيختار الخزنة 
+------
+bodyinfo 
+list<emptyWeight , empCount>----> هنا هخون مجموعه الوزنات الفارغه وعدد الاقفاص الفارغه لكل وزنه
+lish<grossWeight , totCount>----> هنا هخزن مجموع الوزن القائم وعدد الاقفاص لكل وزنه
+------
+tail info
+totalempWeight --- مجموع الوزن الفارغ دائما موجب
+totalGrossWeight --- مجموع الوزن القائم دائما موجب
+netweight = totalGrossWeight - totalempWeight دائما موجب
+price دائما موجب inital value 0
+totalInvoice = price * netweight
+-----------------------------------------
+recive tbl
+جدول المتحصلات
 
