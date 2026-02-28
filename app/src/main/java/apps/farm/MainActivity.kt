@@ -42,8 +42,13 @@ class MainActivity : FragmentActivity() {
                     val isAuthEnabled by authViewModel.isAuthEnabled.collectAsState(initial = false)
                     val useBiometric by authViewModel.useBiometric.collectAsState(initial = false)
                     val isAuthorized by authViewModel.isAuthorized.collectAsState()
+                    val trialExpired by authViewModel.trialExpired.collectAsState()
 
-                    if (isAuthEnabled && !isAuthorized) {
+                    if (trialExpired) {
+                        apps.farm.ui.screens.TrialActivationScreen(
+                            onActivate = { key -> authViewModel.verifyActivationKey(key) }
+                        )
+                    } else if (isAuthEnabled && !isAuthorized) {
                         val authError by authViewModel.authError.collectAsState()
                         AuthScreen(
                             onPinEntered = { authViewModel.checkPin(it) },

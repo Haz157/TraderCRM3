@@ -3,6 +3,7 @@ package apps.farm.data.repository
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,6 +23,8 @@ class AuthRepository @Inject constructor(
     private val SAVED_PIN = stringPreferencesKey("saved_pin")
     private val BACKUP_EMAIL = stringPreferencesKey("backup_email")
     private val IS_AUTO_BACKUP_ENABLED = booleanPreferencesKey("is_auto_backup_enabled")
+    private val FIRST_OPEN_DATE = longPreferencesKey("first_open_date")
+    private val IS_ACTIVATED = booleanPreferencesKey("is_activated")
 
     val isAuthEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[IS_AUTH_ENABLED] ?: false
@@ -41,6 +44,28 @@ class AuthRepository @Inject constructor(
 
     val isAutoBackupEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[IS_AUTO_BACKUP_ENABLED] ?: false
+    }
+
+    val firstOpenDate: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[FIRST_OPEN_DATE]
+    }
+
+    val isActivated: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[IS_ACTIVATED] ?: false
+    }
+
+    suspend fun setFirstOpenDate(date: Long) {
+        context.dataStore.edit { preferences ->
+            if (preferences[FIRST_OPEN_DATE] == null) {
+                preferences[FIRST_OPEN_DATE] = date
+            }
+        }
+    }
+
+    suspend fun setActivated(activated: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_ACTIVATED] = activated
+        }
     }
 
     suspend fun setAuthEnabled(enabled: Boolean) {

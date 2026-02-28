@@ -27,6 +27,47 @@ class AuthViewModel @Inject constructor(
     val backupEmail = authRepository.backupEmail
     val isAutoBackupEnabled = authRepository.isAutoBackupEnabled
 
+    // Trial and Activation
+    private val ACTIVATION_KEY = "FARM-PRO-2026-HTS" // Shared activation key
+    val isActivated = authRepository.isActivated
+    val firstOpenDate = authRepository.firstOpenDate
+
+    private val _trialExpired = MutableStateFlow(false)
+    val trialExpired: StateFlow<Boolean> = _trialExpired.asStateFlow()
+
+    init {
+        checkTrialStatus()
+    }
+
+    private fun checkTrialStatus() {
+        viewModelScope.launch {
+            val firstOpen = authRepository.firstOpenDate.first()
+            if (firstOpen == null) {
+                authRepository.setFirstOpenDate(System.currentTimeMillis())
+            } else {
+                val activated = authRepository.isActivated.first()
+                if (!activated) {
+                    val threeDaysInMillis = 3 * 24 * 60 * 60 * 1000L
+                    if (System.currentTimeMillis() - firstOpen > threeDaysInMillis) {
+                        _trialExpired.value = true
+                    }
+                }
+            }
+        }
+    }
+
+    fun verifyActivationKey(key: String): Boolean {
+        return if (key == ACTIVATION_KEY) {
+            viewModelScope.launch {
+                authRepository.setActivated(true)
+                _trialExpired.value = false
+            }
+            true
+        } else {
+            false
+        }
+    }
+
     fun checkPin(inputPin: String) {
         viewModelScope.launch {
             val savedPin = authRepository.savedPin.first()
