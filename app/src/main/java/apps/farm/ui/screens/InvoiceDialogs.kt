@@ -59,7 +59,7 @@ fun WeightDialog(
                     onValueChange = { weight = it },
                     label = stringResource(R.string.label_weight_kg),
                     icon = Icons.Default.Scale,
-                    placeholder = "0.00",
+                    placeholder = "0.0",
                     isDecimal = true,
                     maxDecimals = 3
                 )
@@ -191,7 +191,7 @@ fun FarmSelectionDialog(
 
 @Composable
 fun CustomerSelectionDialog(
-    customers: List<Customer>,
+    customers: List<CustomerWithBalance>,
     onDismiss: () -> Unit,
     onSelect: (Customer) -> Unit
 ) {
@@ -223,7 +223,8 @@ fun CustomerSelectionDialog(
                     modifier = Modifier.height(200.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(customers) { customer ->
+                    items(customers) { customerWithBalance ->
+                        val customer = customerWithBalance.customer
                         Card(
                             onClick = {
                                 onSelect(customer)
@@ -452,4 +453,151 @@ fun CycleSelectionDialog(
         }
     }
 }
+
+@Composable
+fun DateRangePickerDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (Long?, Long?) -> Unit
+) {
+    var startDate by remember { mutableStateOf<Long?>(null) }
+    var endDate by remember { mutableStateOf<Long?>(null) }
+    
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "فترة التقرير",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = TextPrimary
+                )
+                
+                // Start Date Selection
+                Card(
+                    onClick = {
+                        val calendar = java.util.Calendar.getInstance()
+                        android.app.DatePickerDialog(
+                            context,
+                            { _, year, month, dayOfMonth ->
+                                val cal = java.util.Calendar.getInstance()
+                                cal.set(year, month, dayOfMonth, 0, 0, 0)
+                                cal.set(java.util.Calendar.MILLISECOND, 0)
+                                startDate = cal.timeInMillis
+                            },
+                            calendar.get(java.util.Calendar.YEAR),
+                            calendar.get(java.util.Calendar.MONTH),
+                            calendar.get(java.util.Calendar.DAY_OF_MONTH)
+                        ).show()
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.DateRange, contentDescription = null, tint = PrimaryDark)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("تاريخ البداية", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                            Text(
+                                text = startDate?.let { sdf.format(Date(it)) } ?: "اختر التاريخ",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (startDate != null) TextPrimary else TextDisabled
+                            )
+                        }
+                    }
+                }
+
+                // End Date Selection
+                Card(
+                    onClick = {
+                        val calendar = java.util.Calendar.getInstance()
+                        android.app.DatePickerDialog(
+                            context,
+                            { _, year, month, dayOfMonth ->
+                                val cal = java.util.Calendar.getInstance()
+                                cal.set(year, month, dayOfMonth, 23, 59, 59)
+                                cal.set(java.util.Calendar.MILLISECOND, 999)
+                                endDate = cal.timeInMillis
+                            },
+                            calendar.get(java.util.Calendar.YEAR),
+                            calendar.get(java.util.Calendar.MONTH),
+                            calendar.get(java.util.Calendar.DAY_OF_MONTH)
+                        ).show()
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.DateRange, contentDescription = null, tint = PrimaryDark)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("تاريخ النهاية", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                            Text(
+                                text = endDate?.let { sdf.format(Date(it)) } ?: "اختر التاريخ",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (endDate != null) TextPrimary else TextDisabled
+                            )
+                        }
+                    }
+                }
+
+                Text(
+                    text = "اترك التواريخ فارغة للحصول على تقرير كامل",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.button_cancel))
+                    }
+                    
+                    FilledTonalButton(
+                        onClick = { onConfirm(startDate, endDate) },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text("تم")
+                    }
+                }
+            }
+        }
+    }
+}
+
 

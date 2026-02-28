@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
@@ -60,10 +61,12 @@ fun SaleInvoiceDetailScreen(
     val price = invoiceViewModel.price.collectAsState()
     val emptyWeights = invoiceViewModel.emptyWeights.collectAsState()
     val grossWeights = invoiceViewModel.grossWeights.collectAsState()
+    val discountAmount = invoiceViewModel.discountAmount.collectAsState()
+    val additionAmount = invoiceViewModel.additionAmount.collectAsState()
     
     // Selection lists from ViewModel
     val farmlist: List<Farm> by invoiceViewModel.activeFarms.collectAsState(initial = emptyList())
-    val customerlist: List<Customer> by invoiceViewModel.activeCustomers.collectAsState(initial = emptyList())
+    val customerlist: List<CustomerWithBalance> by invoiceViewModel.activeCustomers.collectAsState(initial = emptyList())
     val safelist: List<Safe> by invoiceViewModel.activeSafes.collectAsState(initial = emptyList())
     val cyclelist: List<Cycle> by invoiceViewModel.cyclesByFarm.collectAsState()
     
@@ -75,6 +78,14 @@ fun SaleInvoiceDetailScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showEmptyWeightDialog by remember { mutableStateOf(false) }
     var showGrossWeightDialog by remember { mutableStateOf(false) }
+    var showMessage by remember { mutableStateOf<String?>(null) }
+    
+    // Load invoice if editing
+    LaunchedEffect(invoiceId) {
+        if (invoiceId != null) {
+            invoiceViewModel.loadInvoice(invoiceId)
+        }
+    }
     
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     
@@ -82,14 +93,20 @@ fun SaleInvoiceDetailScreen(
     val totalEmptyWeight = emptyWeights.value.sumOf { it.weight }
     val totalGrossWeight = grossWeights.value.sumOf { it.weight }
     val netWeight = totalGrossWeight - totalEmptyWeight
-    val totalInvoice = price.value * netWeight
+    val totalPriceValue = price.value * netWeight
+    val finalInvoiceTotal = totalPriceValue + additionAmount.value - discountAmount.value
+    val remainingValue = finalInvoiceTotal - receiveAmount.value
+
+    fun formatNumber(value: Double): String {
+         return String.format(Locale.US, "%,.2f", value)
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        stringResource(R.string.title_add_invoice),
+                        if (invoiceId == null) stringResource(R.string.title_add_invoice) else "تعديل فاتورة",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         )
@@ -186,11 +203,11 @@ fun SaleInvoiceDetailScreen(
                     )
                     
                     UnifiedFormField(
-                        value = receiveAmount.value.toString(),
+                        value = if (receiveAmount.value == 0.0) "" else receiveAmount.value.toString(),
                         onValueChange = { invoiceViewModel.setReceiveAmount(it.toDoubleOrNull() ?: 0.0) },
                         label = stringResource(R.string.label_receive_amount),
                         icon = Icons.Default.AccountBalance,
-                        placeholder = stringResource(R.string.placeholder_amount),
+                        placeholder = "0.0",
                         isDecimal = true,
                         maxDecimals = 3,
                         imeAction = ImeAction.Next,
@@ -198,11 +215,35 @@ fun SaleInvoiceDetailScreen(
                     )
                     
                     UnifiedFormField(
-                        value = price.value.toString(),
+                        value = if (price.value == 0.0) "" else price.value.toString(),
                         onValueChange = { invoiceViewModel.setPrice(it.toDoubleOrNull() ?: 0.0) },
                         label = stringResource(R.string.label_price),
                         icon = Icons.Default.Receipt,
-                        placeholder = stringResource(R.string.placeholder_amount),
+                        placeholder = "0.0",
+                        isDecimal = true,
+                        maxDecimals = 3,
+                        imeAction = ImeAction.Next,
+                        onImeAction = { focusManager.moveFocus(FocusDirection.Down) }
+                    )
+
+                    UnifiedFormField(
+                        value = if (additionAmount.value == 0.0) "" else additionAmount.value.toString(),
+                        onValueChange = { invoiceViewModel.setAdditionAmount(it.toDoubleOrNull() ?: 0.0) },
+                        label = stringResource(R.string.label_addition_amount),
+                        icon = Icons.Default.Add,
+                        placeholder = "0.0",
+                        isDecimal = true,
+                        maxDecimals = 3,
+                        imeAction = ImeAction.Next,
+                        onImeAction = { focusManager.moveFocus(FocusDirection.Down) }
+                    )
+
+                    UnifiedFormField(
+                        value = if (discountAmount.value == 0.0) "" else discountAmount.value.toString(),
+                        onValueChange = { invoiceViewModel.setDiscountAmount(it.toDoubleOrNull() ?: 0.0) },
+                        label = stringResource(R.string.label_discount_amount),
+                        icon = Icons.Default.Close,
+                        placeholder = "0.0",
                         isDecimal = true,
                         maxDecimals = 3,
                         imeAction = ImeAction.Done,
@@ -331,24 +372,56 @@ fun SaleInvoiceDetailScreen(
                     
                     SummaryRow(
                         label = stringResource(R.string.label_total_empty_weight),
-                        value = stringResource(R.string.format_weight_kg, totalEmptyWeight.toString())
+                        value = stringResource(R.string.format_weight_kg, formatNumber(totalEmptyWeight))
                     )
                     
                     SummaryRow(
                         label = stringResource(R.string.label_total_gross_weight),
-                        value = stringResource(R.string.format_weight_kg, totalGrossWeight.toString())
+                        value = stringResource(R.string.format_weight_kg, formatNumber(totalGrossWeight))
                     )
                     
                     SummaryRow(
                         label = stringResource(R.string.label_net_weight),
-                        value = stringResource(R.string.format_weight_kg, netWeight.toString())
+                        value = stringResource(R.string.format_weight_kg, formatNumber(netWeight))
                     )
+
+                    SummaryRow(
+                        label = stringResource(R.string.label_total_price),
+                        value = formatNumber(totalPriceValue)
+                    )
+
+                    if (additionAmount.value > 0) {
+                        SummaryRow(
+                            label = stringResource(R.string.label_addition_amount),
+                            value = formatNumber(additionAmount.value)
+                        )
+                    }
+
+                    if (discountAmount.value > 0) {
+                        SummaryRow(
+                            label = stringResource(R.string.label_discount_amount),
+                            value = formatNumber(discountAmount.value)
+                        )
+                    }
                     
                     HorizontalDivider(color = PrimaryDark.copy(alpha = 0.3f))
                     
                     SummaryRow(
                         label = stringResource(R.string.label_total_invoice),
-                        value = totalInvoice.toString(),
+                        value = formatNumber(finalInvoiceTotal),
+                        isLarge = true
+                    )
+
+                    SummaryRow(
+                        label = stringResource(R.string.label_receive_amount),
+                        value = formatNumber(receiveAmount.value)
+                    )
+
+                    HorizontalDivider(color = PrimaryDark.copy(alpha = 0.3f))
+
+                    SummaryRow(
+                        label = stringResource(R.string.label_remaining),
+                        value = formatNumber(remainingValue),
                         isLarge = true
                     )
                 }
@@ -359,10 +432,17 @@ fun SaleInvoiceDetailScreen(
             // Save Button
             FilledTonalButton(
                 onClick = {
-                    invoiceViewModel.createInvoice(
-                        onSuccess = { onNavigateBack() },
-                        onError = { /* Show error */ }
-                    )
+                    if (invoiceId == null) {
+                        invoiceViewModel.createInvoice(
+                            onSuccess = { onNavigateBack() },
+                            onError = { showMessage = it }
+                        )
+                    } else {
+                        invoiceViewModel.updateInvoice(
+                            onSuccess = { onNavigateBack() },
+                            onError = { showMessage = it }
+                        )
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -376,7 +456,7 @@ fun SaleInvoiceDetailScreen(
                 Icon(Icons.Default.Receipt, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    stringResource(R.string.button_add_invoice),
+                    if (invoiceId == null) stringResource(R.string.button_add_invoice) else "تعديل فاتورة",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     )
@@ -463,6 +543,19 @@ fun SaleInvoiceDetailScreen(
         
         // Immediate reset because DatePickerDialog is external
         showDatePicker = false
+    }
+
+    showMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { showMessage = null },
+            confirmButton = {
+                TextButton(onClick = { showMessage = null }) {
+                    Text(stringResource(R.string.dialog_button_ok))
+                }
+            },
+            title = { Text(stringResource(R.string.dialog_title_alert)) },
+            text = { Text(message) }
+        )
     }
 }
 

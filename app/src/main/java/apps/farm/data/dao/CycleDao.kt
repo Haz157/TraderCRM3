@@ -30,4 +30,7 @@ interface CycleDao {
 
     @Query("UPDATE Cycletbl SET isActive = :isActive WHERE id = :cycleId")
     suspend fun updateCycleStatus(cycleId: String, isActive: Boolean)
+
+    @Query("SELECT * FROM Cycletbl")
+    suspend fun getAllCyclesSync(): List<Cycle>
 }

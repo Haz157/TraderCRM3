@@ -17,11 +17,20 @@ interface SaleInvoiceDao {
     @Query("SELECT * FROM saleinvoicetbl WHERE id = :id")
     suspend fun getInvoiceById(id: String): SaleInvoice?
 
+    @Query("SELECT MAX(invoiceNo) FROM saleinvoicetbl")
+    suspend fun getMaxInvoiceNo(): Int?
+
     @Query("SELECT * FROM saleinvoicetbl WHERE cycleId = :cycleId AND isBlocked = 0 ORDER BY createdDate DESC")
     fun getInvoicesByCycle(cycleId: String): Flow<List<SaleInvoice>>
 
+    @Query("SELECT * FROM saleinvoicetbl WHERE cycleId = :cycleId AND isBlocked = 0 ORDER BY createdDate DESC")
+    suspend fun getInvoicesByCycleSync(cycleId: String): List<SaleInvoice>
+
     @Query("SELECT * FROM saleinvoicetbl WHERE customerId = :customerId AND isBlocked = 0 ORDER BY createdDate DESC")
     fun getInvoicesByCustomer(customerId: String): Flow<List<SaleInvoice>>
+
+    @Query("SELECT * FROM saleinvoicetbl WHERE customerId = :customerId AND createdDate >= :startDate AND createdDate <= :endDate AND isBlocked = 0 ORDER BY createdDate ASC")
+    suspend fun getInvoicesByCustomerAndDateRange(customerId: String, startDate: Long, endDate: Long): List<SaleInvoice>
 
     @Query("SELECT * FROM saleinvoicetbl WHERE safeId = :safeId AND isBlocked = 0 ORDER BY createdDate DESC")
     fun getInvoicesBySafe(safeId: String): Flow<List<SaleInvoice>>
@@ -31,6 +40,9 @@ interface SaleInvoiceDao {
 
     @Update
     suspend fun updateInvoice(invoice: SaleInvoice)
+
+    @Delete
+    suspend fun deleteInvoice(invoice: SaleInvoice)
 
 
     @Query("UPDATE saleinvoicetbl SET isBlocked = 1 WHERE id = :id")
@@ -48,6 +60,19 @@ interface SaleInvoiceDao {
         insertInvoice(invoice)
         emptyWeights.forEach { insertEmptyWeight(it) }
         grossWeights.forEach { insertGrossWeight(it) }
+    }
+
+    @Transaction
+    suspend fun updateInvoiceWithWeights(
+        invoice: SaleInvoice,
+        emptyWeights: List<EmptyWeight>,
+        grossWeights: List<GrossWeight>
+    ) {
+        updateInvoice(invoice)
+        deleteEmptyWeightsByInvoice(invoice.id)
+        deleteGrossWeightsByInvoice(invoice.id)
+        emptyWeights.forEach { insertEmptyWeight(it.copy(invoiceId = invoice.id)) }
+        grossWeights.forEach { insertGrossWeight(it.copy(invoiceId = invoice.id)) }
     }
 
     @Query("SELECT * FROM emptyweighttbl WHERE invoiceId = :invoiceId")

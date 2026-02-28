@@ -127,6 +127,37 @@ class SaleInvoiceViewModel @Inject constructor(
     fun setInvoiceDate(date: Long) {
         _invoiceDate.value = date
     }
+
+    private var originalInvoice: SaleInvoice? = null
+
+    fun loadInvoice(id: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val invoice = saleInvoiceRepository.getInvoiceById(id)
+                if (invoice != null) {
+                    originalInvoice = invoice
+                    _selectedFarm.value = farmRepository.getFarmById(invoice.farmId)
+                    _selectedCycle.value = cycleRepository.getCycleById(invoice.cycleId)
+                    _selectedCustomer.value = customerRepository.getCustomerById(invoice.customerId)
+                    _selectedSafe.value = safeRepository.getSafeById(invoice.safeId)
+                    _invoiceDate.value = invoice.invoiceDate
+                    _receiveAmount.value = invoice.receiveAmount
+                    _discountAmount.value = invoice.discount
+                    _additionAmount.value = invoice.addition
+                    _price.value = invoice.price
+                    _emptyWeights.value = saleInvoiceRepository.getEmptyWeightsByInvoice(id)
+                    _grossWeights.value = saleInvoiceRepository.getGrossWeightsByInvoice(id)
+                    
+                    _selectedFarm.value?.let { loadCyclesByFarm(it.id) }
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "خطأ في تحميل الفاتورة: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
     
     fun setReceiveAmount(amount: Double) {
         _receiveAmount.value = amount
@@ -178,36 +209,29 @@ class SaleInvoiceViewModel @Inject constructor(
         return date >= cycle.sd && date <= cycle.ed
     }
     
-    fun blockInvoice(id: String) {
+
+    fun deleteInvoice(invoice: SaleInvoice, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
-                saleInvoiceRepository.blockInvoice(id)
-            } catch (e: Exception) {
-                _errorMessage.value = getApplication<Application>().getString(R.string.error_block_invoice, e.message)
-            }
-        }
-    }
-    
-    fun unblockInvoice(id: String) {
-        viewModelScope.launch {
-            try {
-                saleInvoiceRepository.unblockInvoice(id)
-            } catch (e: Exception) {
-                _errorMessage.value = getApplication<Application>().getString(R.string.error_unblock_invoice, e.message)
-            }
-        }
-    }
-    
-    fun toggleBlockStatus(id: String, isCurrentlyBlocked: Boolean) {
-        viewModelScope.launch {
-            try {
-                if (isCurrentlyBlocked) {
-                    saleInvoiceRepository.unblockInvoice(id)
-                } else {
-                    saleInvoiceRepository.blockInvoice(id)
+                // Customer balance update removed as it's now dynamically calculated
+                // 2. Fetch current safe
+                val safe = safeRepository.getSafeById(invoice.safeId)
+                if (safe != null) {
+                    // Reverse the safe impact:
+                    // When invoice was created: safe.balance = safe.balance + invoice.receiveAmount
+                    // When deleting: safe.balance = safe.balance - invoice.receiveAmount
+                    val updatedSafe = safe.copy(balance = safe.balance - invoice.receiveAmount)
+                    safeRepository.updateSafe(updatedSafe)
                 }
+
+                // 3. Delete weights
+                saleInvoiceRepository.deleteWeightsByInvoice(invoice.id)
+                
+                // 4. Delete invoice
+                saleInvoiceRepository.deleteInvoice(invoice)
+                onResult(true, "تم حذف الفاتورة بنجاح")
             } catch (e: Exception) {
-                _errorMessage.value = getApplication<Application>().getString(R.string.error_update_invoice_status, e.message)
+                onResult(false, "خطأ في حذف الفاتورة: ${e.message}")
             }
         }
     }
@@ -258,7 +282,10 @@ class SaleInvoiceViewModel @Inject constructor(
                 val totalGrossWeight = _grossWeights.value.sumOf { it.weight }
                 val netWeight = totalGrossWeight - totalEmptyWeight
                 val totalPrice = _price.value * netWeight
-                val totalInvoice = totalPrice + _additionAmount.value - _discountAmount.value - _receiveAmount.value
+                val invoiceTotalAmount = totalPrice + _additionAmount.value - _discountAmount.value
+                val remainingAmount = invoiceTotalAmount - _receiveAmount.value
+                
+                val maxNo = saleInvoiceRepository.getMaxInvoiceNo()
                 
                 val invoice = SaleInvoice(
                     id = UUID.randomUUID().toString(),
@@ -275,7 +302,8 @@ class SaleInvoiceViewModel @Inject constructor(
                     netWeight = netWeight,
                     price = _price.value,
                     totalPrice = totalPrice,
-                    totalInvoice = totalInvoice
+                    totalInvoice = invoiceTotalAmount,
+                    invoiceNo = maxNo + 1
                 )
                 
                 val finalEmptyWeights = _emptyWeights.value.map { it.copy(invoiceId = invoice.id) }
@@ -284,11 +312,86 @@ class SaleInvoiceViewModel @Inject constructor(
                 saleInvoiceRepository.insertInvoiceWithWeights(
                     invoice, finalEmptyWeights, finalGrossWeights
                 )
+
+                // Safe balance still needs updating
+                val currentSafe = safeRepository.getSafeById(safe.id)
+                currentSafe?.let {
+                    val updatedSafe = it.copy(
+                        balance = it.balance + _receiveAmount.value
+                    )
+                    safeRepository.updateSafe(updatedSafe)
+                }
                 
                 clearForm()
                 onSuccess()
             } catch (e: Exception) {
                 onError(getApplication<Application>().getString(R.string.error_create_invoice, e.message))
+            }
+        }
+    }
+
+    fun updateInvoice(onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val original = originalInvoice ?: return@launch
+                val farm = _selectedFarm.value ?: return@launch
+                val cycle = _selectedCycle.value ?: return@launch
+                val customer = _selectedCustomer.value ?: return@launch
+                val safe = _selectedSafe.value ?: return@launch
+                val date = _invoiceDate.value ?: return@launch
+
+                if (!isInvoiceDateValid()) {
+                    onError(getApplication<Application>().getString(R.string.error_invoice_date_out_of_cycle))
+                    return@launch
+                }
+
+                // 1. Reverse original impacts
+                // Safe impact reversal
+                val currentSafe = safeRepository.getSafeById(original.safeId)
+                currentSafe?.let {
+                    safeRepository.updateSafe(it.copy(balance = it.balance - original.receiveAmount))
+                }
+
+                // 2. Calculate new values
+                val totalEmptyWeight = _emptyWeights.value.sumOf { it.weight }
+                val totalGrossWeight = _grossWeights.value.sumOf { it.weight }
+                val netWeight = totalGrossWeight - totalEmptyWeight
+                val totalPrice = _price.value * netWeight
+                val invoiceTotalAmount = totalPrice + _additionAmount.value - _discountAmount.value
+                val remainingAmount = invoiceTotalAmount - _receiveAmount.value
+
+                val updatedInvoice = original.copy(
+                    farmId = farm.id,
+                    cycleId = cycle.id,
+                    invoiceDate = date,
+                    customerId = customer.id,
+                    safeId = safe.id,
+                    receiveAmount = _receiveAmount.value,
+                    discount = _discountAmount.value,
+                    addition = _additionAmount.value,
+                    totalEmptyWeight = totalEmptyWeight,
+                    totalGrossWeight = totalGrossWeight,
+                    netWeight = netWeight,
+                    price = _price.value,
+                    totalPrice = totalPrice,
+                    totalInvoice = invoiceTotalAmount
+                )
+
+                // 3. Save to DB
+                saleInvoiceRepository.updateInvoiceWithWeights(
+                    updatedInvoice, _emptyWeights.value, _grossWeights.value
+                )
+
+                // 4. New Safe impact
+                val newSafe = safeRepository.getSafeById(safe.id)
+                newSafe?.let {
+                    safeRepository.updateSafe(it.copy(balance = it.balance + _receiveAmount.value))
+                }
+                
+                clearForm()
+                onSuccess()
+            } catch (e: Exception) {
+                onError("خطأ في تعديل الفاتورة: ${e.message}")
             }
         }
     }

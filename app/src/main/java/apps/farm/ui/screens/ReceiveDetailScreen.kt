@@ -5,6 +5,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Note
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -36,9 +38,18 @@ fun ReceiveDetailScreen(
     val discountAmount by receiveViewModel.discountAmount.collectAsState()
     val note by receiveViewModel.note.collectAsState()
     val customerBalance by receiveViewModel.customerBalance.collectAsState()
-    val newBalance by receiveViewModel.newBalance.collectAsState()
+    val safes by receiveViewModel.activeSafes.collectAsState(initial = emptyList())
+    val selectedSafe by receiveViewModel.selectedSafe.collectAsState()
     
     var showCustomerDialog by remember { mutableStateOf(false) }
+    var showSafeDialog by remember { mutableStateOf(false) }
+    var showMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(receiveId) {
+        if (receiveId != null) {
+            receiveViewModel.loadReceive(receiveId)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -51,7 +62,7 @@ fun ReceiveDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -103,6 +114,39 @@ fun ReceiveDetailScreen(
                 }
             }
 
+            // Safe Selection
+            Card(
+                onClick = { showSafeDialog = true },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = SecondaryContainer,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(Icons.Default.AccountBalance, contentDescription = null, modifier = Modifier.padding(8.dp), tint = SecondaryDark)
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(stringResource(R.string.label_safe), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(
+                            text = selectedSafe?.name ?: stringResource(R.string.placeholder_select_safe),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (selectedSafe != null) TextPrimary else TextDisabled
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = TextSecondary)
+                }
+            }
+
             // Amounts Section
             Card(
                 shape = RoundedCornerShape(12.dp),
@@ -118,7 +162,7 @@ fun ReceiveDetailScreen(
                         onValueChange = { receiveViewModel.setReceiveAmount(it.toDoubleOrNull() ?: 0.0) },
                         label = stringResource(R.string.label_receive_amount),
                         icon = Icons.Default.AttachMoney,
-                        placeholder = stringResource(R.string.placeholder_amount),
+                        placeholder = "0.0",
                         isDecimal = true
                     )
 
@@ -127,7 +171,7 @@ fun ReceiveDetailScreen(
                         onValueChange = { receiveViewModel.setDiscountAmount(it.toDoubleOrNull() ?: 0.0) },
                         label = stringResource(R.string.label_discount_amount),
                         icon = Icons.Default.CardGiftcard,
-                        placeholder = stringResource(R.string.placeholder_amount),
+                        placeholder = "0.0",
                         isDecimal = true
                     )
                 }
@@ -138,13 +182,14 @@ fun ReceiveDetailScreen(
                 value = note,
                 onValueChange = { receiveViewModel.setNote(it) },
                 label = stringResource(R.string.label_notes),
-                icon = Icons.Default.Note,
+                icon = Icons.AutoMirrored.Filled.Note,
                 placeholder = stringResource(R.string.label_notes),
                 minLines = 3
             )
 
             // Balance Summary
-            if (selectedCustomer != null) {
+            if (receiveId == null && selectedCustomer != null) {
+                val newBalance = customerBalance + receiveAmount + discountAmount
                 Card(
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = PrimaryContainer.copy(alpha = 0.3f)),
@@ -162,20 +207,39 @@ fun ReceiveDetailScreen(
             // Save Button
             Button(
                 onClick = {
-                    receiveViewModel.createReceive(
-                        onSuccess = { onNavigateBack() },
-                        onError = { /* Handle error */ }
-                    )
+                    if (receiveId == null) {
+                        receiveViewModel.createReceive(
+                            onSuccess = { onNavigateBack() },
+                            onError = { showMessage = it }
+                        )
+                    } else {
+                        receiveViewModel.updateReceive(
+                            receiveId = receiveId,
+                            onSuccess = { onNavigateBack() },
+                            onError = { showMessage = it }
+                        )
+                    }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                enabled = selectedCustomer != null && receiveAmount > 0
+                enabled = selectedCustomer != null && selectedSafe != null && receiveAmount > 0
             ) {
-                Icon(Icons.Default.Save, contentDescription = null)
+                Icon(if (receiveId == null) Icons.Default.Save else Icons.Default.Edit, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.button_add_receive), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = if (receiveId == null) stringResource(R.string.button_add_receive) else "حفظ التعديلات",
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
         }
+    }
+
+    if (showSafeDialog) {
+        SafeSelectionDialog(
+            safes = safes,
+            onDismiss = { showSafeDialog = false },
+            onSelect = { receiveViewModel.selectSafe(it) }
+        )
     }
 
     if (showCustomerDialog) {
@@ -183,6 +247,19 @@ fun ReceiveDetailScreen(
             customers = customers,
             onDismiss = { showCustomerDialog = false },
             onSelect = { receiveViewModel.selectCustomer(it) }
+        )
+    }
+
+    showMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { showMessage = null },
+            confirmButton = {
+                TextButton(onClick = { showMessage = null }) {
+                    Text(stringResource(R.string.dialog_button_ok))
+                }
+            },
+            title = { Text(stringResource(R.string.dialog_title_alert)) },
+            text = { Text(message) }
         )
     }
 }

@@ -18,6 +18,9 @@ interface ReceiveDao {
     @Query("SELECT * FROM receivetbl WHERE customerId = :customerId AND isBlocked = 0 ORDER BY createdDate DESC")
     fun getReceivesByCustomer(customerId: String): Flow<List<Receive>>
 
+    @Query("SELECT * FROM receivetbl WHERE customerId = :customerId AND createdDate >= :startDate AND createdDate <= :endDate AND isBlocked = 0 ORDER BY createdDate ASC")
+    suspend fun getReceivesByCustomerAndDateRange(customerId: String, startDate: Long, endDate: Long): List<Receive>
+
     @Query("SELECT SUM(receive - discount) FROM receivetbl WHERE customerId = :customerId AND isBlocked = 0")
     suspend fun getTotalReceiveByCustomer(customerId: String): Double?
 
@@ -27,10 +30,16 @@ interface ReceiveDao {
     @Update
     suspend fun updateReceive(receive: Receive)
 
+    @Delete
+    suspend fun deleteReceive(receive: Receive)
+
 
     @Query("UPDATE receivetbl SET isBlocked = 1 WHERE id = :id")
     suspend fun blockReceive(id: String)
 
     @Query("UPDATE receivetbl SET isBlocked = 0 WHERE id = :id")
     suspend fun unblockReceive(id: String)
+
+    @Query("SELECT MAX(receiveNo) FROM receivetbl")
+    suspend fun getMaxReceiveNo(): Int?
 }

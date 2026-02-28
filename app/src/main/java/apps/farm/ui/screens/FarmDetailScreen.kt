@@ -222,11 +222,22 @@ fun FarmDetailScreen(
 
                     scope.launch {
                         if (isEditing) {
-                            farmViewModel.updateFarm(farm)
+                            farmViewModel.updateFarm(farm) { success, message ->
+                                if (success) {
+                                    onNavigateBack()
+                                } else {
+                                    showMessage = message
+                                }
+                            }
                         } else {
-                            farmViewModel.insertFarm(farm)
+                            farmViewModel.insertFarm(farm) { success, message ->
+                                if (success) {
+                                    onNavigateBack()
+                                } else {
+                                    showMessage = message
+                                }
+                            }
                         }
-                        onNavigateBack()
                     }
                 },
                 modifier = Modifier

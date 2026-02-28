@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,6 +45,7 @@ fun CycleDetailScreen(
     cycleId: String?,
     farmId: String,
     onNavigateBack: () -> Unit,
+    onNavigateToPdfViewer: (String) -> Unit,
     cycleViewModel: CycleViewModel = hiltViewModel()
 ) {
     var cycleName by remember { mutableStateOf("") }
@@ -52,9 +54,9 @@ fun CycleDetailScreen(
     var isActive by remember { mutableStateOf(true) }
     var isEditing by remember { mutableStateOf(false) }
     var showMessage by remember { mutableStateOf<String?>(null) }
+    var isGeneratingPdf by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val calendar = Calendar.getInstance()
     val focusManager = LocalFocusManager.current
 
@@ -188,6 +190,39 @@ fun CycleDetailScreen(
                     isActive = isActive,
                     onToggle = { isActive = !isActive }
                 )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Print Cycle Report Button
+                Button(
+                    onClick = {
+                        isGeneratingPdf = true
+                        cycleId?.let { id ->
+                            cycleViewModel.generateDetailedCycleReport(context, id) { file ->
+                                isGeneratingPdf = false
+                                if (file != null) {
+                                    onNavigateToPdfViewer(file.absolutePath)
+                                } else {
+                                    showMessage = "Error generating PDF"
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    )
+                ) {
+                    if (isGeneratingPdf) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(24.dp))
+                    } else {
+                        Icon(Icons.Default.EditNote, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Print Cycle Report", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))

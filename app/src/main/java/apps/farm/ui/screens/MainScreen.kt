@@ -36,6 +36,9 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -44,6 +47,7 @@ import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -64,9 +68,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 import androidx.hilt.navigation.compose.hiltViewModel
 import apps.farm.R
 import apps.farm.data.model.Customer
+import apps.farm.data.model.CustomerWithBalance
 import apps.farm.data.model.Farm
 import apps.farm.ui.theme.BalanceNegative
 import apps.farm.ui.theme.BalanceNeutral
@@ -101,11 +107,17 @@ sealed class TabScreen(val route: String) {
 @Composable
 fun MainScreen(
     onNavigateToFarmDetail: (String?) -> Unit,
-    onNavigateToCycleDetail: (String?, String?) -> Unit,
+    onNavigateToFarmView: (String) -> Unit,
     onNavigateToCustomerDetail: (String?) -> Unit,
+    onNavigateToCustomerView: (String) -> Unit,
     onNavigateToSafeDetail: (String?) -> Unit,
+    onNavigateToSafeView: (String) -> Unit,
     onNavigateToInvoiceDetail: (String?) -> Unit,
+    onNavigateToInvoiceView: (String) -> Unit,
     onNavigateToReceiveDetail: (String?) -> Unit,
+    onNavigateToReceiveView: (String) -> Unit,
+    onNavigateToSecuritySettings: () -> Unit,
+    onNavigateToBackup: () -> Unit,
     farmViewModel: FarmViewModel = hiltViewModel(),
     customerViewModel: CustomerViewModel = hiltViewModel()
 ) {
@@ -125,28 +137,27 @@ fun MainScreen(
                             )
                         )
                     },
-//                    navigationIcon = {
-//                        IconButton(
-//                            onClick = { /* TODO: Add menu action */ }
-//                        ) {
-//                            Icon(
-//                                imageVector = Icons.Default.Menu,
-//                                contentDescription = stringResource(R.string.content_description_menu),
-//                                tint = MaterialTheme.colorScheme.onPrimary
-//                            )
-//                        }
-//                    },
-//                    actions = {
-//                        IconButton(
-//                            onClick = { /* TODO: Add search action */ }
-//                        ) {
-//                            Icon(
-//                                imageVector = Icons.Default.Search,
-//                                contentDescription = stringResource(R.string.content_description_search),
-//                                tint = MaterialTheme.colorScheme.onPrimary
-//                            )
-//                        }
-//                    },
+                    actions = {
+                        val context = androidx.compose.ui.platform.LocalContext.current
+                        
+                        IconButton(onClick = onNavigateToSecuritySettings) {
+                            Icon(
+                                imageVector = Icons.Filled.Security,
+                                contentDescription = "Security",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+
+                        IconButton(
+                            onClick = onNavigateToBackup
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.CloudUpload,
+                                contentDescription = stringResource(R.string.content_description_backup),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -243,19 +254,22 @@ fun MainScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 composable(TabScreen.Farms.route) {
-                    FarmsTab(farmViewModel, onNavigateToFarmDetail)
+                    FarmsTab(farmViewModel, onNavigateToFarmView, onNavigateToFarmDetail)
                 }
                 composable(TabScreen.Customers.route) {
-                    CustomersTab(customerViewModel, onNavigateToCustomerDetail)
+                    CustomersTab(customerViewModel, onNavigateToCustomerView, onNavigateToCustomerDetail)
                 }
                 composable(TabScreen.Safes.route) {
-                    SafesScreen(onNavigateToSafeDetail = onNavigateToSafeDetail)
+                    SafesScreen(onNavigateToSafeView = onNavigateToSafeView, onNavigateToSafeDetail = onNavigateToSafeDetail)
                 }
                 composable(TabScreen.Invoices.route) {
-                    InvoicesScreen(onNavigateToInvoiceDetail = onNavigateToInvoiceDetail)
+                    InvoicesScreen(onNavigateToInvoiceView = onNavigateToInvoiceView, onNavigateToInvoiceDetail = onNavigateToInvoiceDetail)
                 }
                 composable(TabScreen.Receives.route) {
-                    ReceivesScreen(onNavigateToReceiveDetail = onNavigateToReceiveDetail)
+                    ReceivesScreen(onNavigateToReceiveView = onNavigateToReceiveView, onNavigateToReceiveDetail = onNavigateToReceiveDetail)
+                }
+                composable("backup") {
+                    BackupScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
             }
         }
@@ -265,6 +279,7 @@ fun MainScreen(
 @Composable
 fun FarmsTab(
     farmViewModel: FarmViewModel,
+    onNavigateToFarmView: (String) -> Unit,
     onNavigateToFarmDetail: (String?) -> Unit
 ) {
     val farms by farmViewModel.allFarms.collectAsState(initial = emptyList())
@@ -272,7 +287,7 @@ fun FarmsTab(
     if (farms.isEmpty()) {
         EmptyStateMessage(
             icon = Icons.Farm,
-            message = stringResource(R.string.message_no_cycles)
+            message = stringResource(R.string.message_no_farms)
         )
     } else {
         LazyColumn(
@@ -286,6 +301,7 @@ fun FarmsTab(
             ) { farm ->
                 FarmCard(
                     farm = farm,
+                    onClick = { onNavigateToFarmView(farm.id) },
                     onEdit = { onNavigateToFarmDetail(farm.id) },
                     onToggleBlock = { farmViewModel.toggleBlockStatus(farm.id, !farm.blocked) }
                 )
@@ -298,6 +314,7 @@ fun FarmsTab(
 @Composable
 fun FarmCard(
     farm: Farm,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onToggleBlock: () -> Unit
 ) {
@@ -308,7 +325,7 @@ fun FarmCard(
     )
 
     Card(
-        onClick = onEdit,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .scale(animatedScale),
@@ -372,23 +389,34 @@ fun FarmCard(
                     }
                 }
 
-                //  Toggle Button
-                FilledIconToggleButton(
-                    checked = !farm.blocked,
-                    onCheckedChange = { onToggleBlock() },
-                    modifier = Modifier.size(44.dp),
-                    colors = IconButtonDefaults.filledIconToggleButtonColors(
-                        checkedContainerColor = StatusActiveContainer,
-                        checkedContentColor = StatusActive,
-                        containerColor = StatusBlockedContainer,
-                        contentColor = StatusBlocked
-                    )
-                ) {
-                    Icon(
-                        imageVector = if (farm.blocked) Icons.Default.Block else Icons.Default.CheckCircle,
-                        contentDescription = if (farm.blocked) stringResource(R.string.status_blocked) else stringResource(R.string.status_active),
-                        modifier = Modifier.size(20.dp)
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // Edit Button
+                    IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "تعديل",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    //  Toggle Button
+                    FilledIconToggleButton(
+                        checked = !farm.blocked,
+                        onCheckedChange = { onToggleBlock() },
+                        modifier = Modifier.size(36.dp),
+                        colors = IconButtonDefaults.filledIconToggleButtonColors(
+                            checkedContainerColor = StatusActiveContainer,
+                            checkedContentColor = StatusActive,
+                            containerColor = StatusBlockedContainer,
+                            contentColor = StatusBlocked
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (farm.blocked) Icons.Default.Block else Icons.Default.CheckCircle,
+                            contentDescription = if (farm.blocked) stringResource(R.string.status_blocked) else stringResource(R.string.status_active),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 
@@ -416,6 +444,7 @@ fun FarmCard(
 @Composable
 fun CustomersTab(
     customerViewModel: CustomerViewModel,
+    onNavigateToCustomerView: (String) -> Unit,
     onNavigateToCustomerDetail: (String?) -> Unit
 ) {
     val customers by customerViewModel.allCustomers.collectAsState(initial = emptyList())
@@ -423,7 +452,7 @@ fun CustomersTab(
     if (customers.isEmpty()) {
         EmptyStateMessage(
             icon = Icons.Default.Person,
-            message = stringResource(R.string.message_no_cycles)
+            message = stringResource(R.string.message_no_customers)
         )
     } else {
         LazyColumn(
@@ -433,14 +462,16 @@ fun CustomersTab(
         ) {
             items(
                 items = customers,
-                key = { it.id }
-            ) { customer ->
+                key = { it.customer.id }
+            ) { customerWithBalance ->
                 CustomerCard(
-                    customer = customer,
-                    onEdit = { onNavigateToCustomerDetail(customer.id) },
-                    onToggleBlock = { customerViewModel.toggleBlockStatus(customer.id, !customer.blocked) }
+                    customerWithBalance = customerWithBalance,
+                    onClick = { onNavigateToCustomerView(customerWithBalance.customer.id) },
+                    onEdit = { onNavigateToCustomerDetail(customerWithBalance.customer.id) },
+                    onToggleBlock = { customerViewModel.toggleBlockStatus(customerWithBalance.customer.id, !customerWithBalance.customer.blocked) }
                 )
             }
+
         }
     }
 }
@@ -448,10 +479,14 @@ fun CustomersTab(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerCard(
-    customer: Customer,
+    customerWithBalance: CustomerWithBalance,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onToggleBlock: () -> Unit
 ) {
+    val customer = customerWithBalance.customer
+    val currentBalance = customerWithBalance.currentBalance
+    
     val animatedScale by animateFloatAsState(
         targetValue = 1f,
         animationSpec = spring(stiffness = Spring.StiffnessMedium, dampingRatio = Spring.DampingRatioMediumBouncy),
@@ -459,13 +494,13 @@ fun CustomerCard(
     )
 
     val balanceColor = when {
-        customer.balance < 0 -> BalanceNegative
-        customer.balance > 0 -> BalancePositive
+        currentBalance > 0 -> BalanceNegative // Debt is positive, so if > 0 it means he owes money (Negative for him)
+        currentBalance < 0 -> BalancePositive // If < 0 it means he has credit (Positive for him)
         else -> BalanceNeutral
     }
 
     Card(
-        onClick = onEdit,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .scale(animatedScale),
@@ -513,10 +548,8 @@ fun CustomerCard(
                     Column {
                         Text(
                             text = customer.name,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold
-                            ),
-                            color = if (customer.blocked) StatusBlocked else TextPrimary
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = if (customer.blocked) StatusBlocked else MaterialTheme.colorScheme.onSurface
                         )
                         if (customer.phone.isNotEmpty()) {
                             Text(
@@ -528,23 +561,50 @@ fun CustomerCard(
                     }
                 }
 
-                //  Toggle Button
-                FilledIconToggleButton(
-                    checked = !customer.blocked,
-                    onCheckedChange = { onToggleBlock() },
-                    modifier = Modifier.size(44.dp),
-                    colors = IconButtonDefaults.filledIconToggleButtonColors(
-                        checkedContainerColor = StatusActiveContainer,
-                        checkedContentColor = StatusActive,
-                        containerColor = StatusBlockedContainer,
-                        contentColor = StatusBlocked
-                    )
+                // Balance Info
+                Column(
+                    horizontalAlignment = Alignment.End
                 ) {
-                    Icon(
-                        imageVector = if (customer.blocked) Icons.Default.Block else Icons.Default.CheckCircle,
-                        contentDescription = if (customer.blocked) stringResource(R.string.status_blocked) else stringResource(R.string.status_active),
-                        modifier = Modifier.size(20.dp)
+                    Text(
+                        text = stringResource(R.string.label_current_balance),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextSecondary
                     )
+                    Text(
+                        text = String.format(Locale.ENGLISH, "%,.2f", currentBalance),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = balanceColor
+                    )
+                }
+
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // Edit Button
+                    IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "تعديل",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    //  Toggle Button
+                    FilledIconToggleButton(
+                        checked = !customer.blocked,
+                        onCheckedChange = { onToggleBlock() },
+                        modifier = Modifier.size(36.dp),
+                        colors = IconButtonDefaults.filledIconToggleButtonColors(
+                            checkedContainerColor = StatusActiveContainer,
+                            checkedContentColor = StatusActive,
+                            containerColor = StatusBlockedContainer,
+                            contentColor = StatusBlocked
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (customer.blocked) Icons.Default.Block else Icons.Default.CheckCircle,
+                            contentDescription = if (customer.blocked) stringResource(R.string.status_blocked) else stringResource(R.string.status_active),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 

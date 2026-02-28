@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,9 +31,12 @@ import java.util.*
 @Composable
 fun ReceivesScreen(
     receiveViewModel: ReceiveViewModel = hiltViewModel(),
+    onNavigateToReceiveView: (String) -> Unit,
     onNavigateToReceiveDetail: (String?) -> Unit
 ) {
     val receives by receiveViewModel.allReceives.collectAsState(initial = emptyList())
+    var receiveToDelete by remember { mutableStateOf<Receive?>(null) }
+    var showMessage by remember { mutableStateOf<String?>(null) }
 
     if (receives.isEmpty()) {
         EmptyStateMessage(
@@ -50,11 +55,54 @@ fun ReceivesScreen(
             ) { receive ->
                 ReceiveCard(
                     receive = receive,
+                    onClick = { onNavigateToReceiveView(receive.id) },
                     onEdit = { onNavigateToReceiveDetail(receive.id) },
-                    onToggleBlock = { receiveViewModel.toggleBlockStatus(receive.id, receive.isBlocked) }
+                    onDelete = { receiveToDelete = receive }
                 )
             }
         }
+    }
+
+    receiveToDelete?.let { receive ->
+        AlertDialog(
+            onDismissRequest = { receiveToDelete = null },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        receiveViewModel.deleteReceive(receive) { success, message ->
+                            if (success) {
+                                receiveToDelete = null
+                            } else {
+                                showMessage = message
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = StatusBlocked)
+                ) {
+                    Text(stringResource(R.string.button_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { receiveToDelete = null }) {
+                    Text(stringResource(R.string.button_cancel))
+                }
+            },
+            title = { Text(stringResource(R.string.dialog_title_confirm_delete)) },
+            text = { Text("هل أنت متأكد من حذف هذا التحصيل؟ سيتم عكس تأثير مبالغه من أرصدة العميل والخزنة.") }
+        )
+    }
+
+    showMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { showMessage = null },
+            confirmButton = {
+                TextButton(onClick = { showMessage = null }) {
+                    Text(stringResource(R.string.dialog_button_ok))
+                }
+            },
+            title = { Text(stringResource(R.string.dialog_title_alert)) },
+            text = { Text(message) }
+        )
     }
 }
 
@@ -62,27 +110,31 @@ fun ReceivesScreen(
 @Composable
 fun ReceiveCard(
     receive: Receive,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
-    onToggleBlock: () -> Unit
+    onDelete: () -> Unit
 ) {
     val animatedScale by animateFloatAsState(
         targetValue = 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium, dampingRatio = Spring.DampingRatioMediumBouncy),
+        animationSpec = spring(
+            stiffness = Spring.StiffnessMedium,
+            dampingRatio = Spring.DampingRatioMediumBouncy
+        ),
         label = "scale"
     )
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
 
     Card(
-        onClick = onEdit,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .scale(animatedScale),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (receive.isBlocked) StatusBlockedContainer else MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (receive.isBlocked) 2.dp else 4.dp,
+            defaultElevation = 4.dp,
             pressedElevation = 8.dp
         )
     ) {
@@ -100,14 +152,13 @@ fun ReceiveCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    // Status Indicator
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (receive.isBlocked) StatusBlocked else StatusActive,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            imageVector = if (receive.isBlocked) Icons.Default.Block else Icons.Default.AccountBalanceWallet,
+                            imageVector = Icons.Default.AccountBalanceWallet,
                             contentDescription = null,
                             modifier = Modifier
                                 .padding(8.dp)
@@ -120,11 +171,14 @@ fun ReceiveCard(
 
                     Column {
                         Text(
-                            text = stringResource(R.string.label_receive_amount_with_value, receive.receive.toString()),
+                            text = stringResource(
+                                R.string.label_receive_number,
+                                receive.receiveNo.toString()
+                            ),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
-                            color = if (receive.isBlocked) StatusBlocked else TextPrimary
+                            color = TextPrimary
                         )
                         Text(
                             text = dateFormat.format(Date(receive.createdDate)),
@@ -135,23 +189,87 @@ fun ReceiveCard(
                     }
                 }
 
-                // Toggle Button
-                FilledIconToggleButton(
-                    checked = !receive.isBlocked,
-                    onCheckedChange = { onToggleBlock() },
-                    modifier = Modifier.size(44.dp),
-                    colors = IconButtonDefaults.filledIconToggleButtonColors(
-                        checkedContainerColor = StatusActiveContainer,
-                        checkedContentColor = StatusActive,
-                        containerColor = StatusBlockedContainer,
-                        contentColor = StatusBlocked
-                    )
+                // Actions
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        imageVector = if (receive.isBlocked) Icons.Default.Block else Icons.Default.CheckCircle,
-                        contentDescription = if (receive.isBlocked) stringResource(R.string.status_blocked) else stringResource(R.string.status_active),
-                        modifier = Modifier.size(20.dp)
+                    // Edit Button
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "تعديل",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    // Delete Button
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(36.dp),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = StatusBlocked
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.content_description_delete),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                fun formatDecimal(value: Double): String {
+                    return if (value == value.toLong().toDouble()) {
+                        String.format(Locale.ENGLISH, "%.0f", value)
+                    } else {
+                        String.format(Locale.ENGLISH, "%,.2f", value)
+                    }
+                }
+
+                // Amount
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_receive_amount),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
                     )
+                    Text(
+                        text = formatDecimal(receive.receive),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = PrimaryDark,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Discount if exists
+                if (receive.discount > 0) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.label_discount_amount),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSecondary
+                        )
+                        Text(
+                            text = formatDecimal(receive.discount),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = StatusBlocked,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
 
@@ -172,23 +290,8 @@ fun ReceiveCard(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
-            
-            if (receive.isBlocked) {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = StatusBlocked.copy(alpha = 0.1f),
-                    modifier = Modifier.wrapContentWidth()
-                ) {
-                    Text(
-                        text = stringResource(R.string.status_blocked),
-                        color = StatusBlocked,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-            }
+
         }
     }
 }
+

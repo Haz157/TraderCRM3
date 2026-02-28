@@ -12,6 +12,7 @@ import apps.farm.data.repository.FarmRepository
 import apps.farm.data.repository.SafeRepository
 import apps.farm.data.repository.SaleInvoiceRepository
 import apps.farm.data.repository.ReceiveRepository
+import apps.farm.utils.BackupManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,37 +25,37 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideFarmRepository(farmDao: FarmDao): FarmRepository {
-        return FarmRepository(farmDao)
+    fun provideFarmRepository(farmDao: FarmDao, backupManager: BackupManager): FarmRepository {
+        return FarmRepository(farmDao, backupManager)
     }
 
     @Provides
     @Singleton
-    fun provideCycleRepository(cycleDao: CycleDao): CycleRepository {
-        return CycleRepository(cycleDao)
+    fun provideCycleRepository(cycleDao: CycleDao, backupManager: BackupManager): CycleRepository {
+        return CycleRepository(cycleDao, backupManager)
     }
 
     @Provides
     @Singleton
-    fun provideCustomerRepository(customerDao: CustomerDao): CustomerRepository {
-        return CustomerRepository(customerDao)
+    fun provideCustomerRepository(customerDao: CustomerDao, backupManager: BackupManager): CustomerRepository {
+        return CustomerRepository(customerDao, backupManager)
     }
 
     @Provides
     @Singleton
-    fun provideSafeRepository(safeDao: SafeDao): SafeRepository {
-        return SafeRepository(safeDao)
+    fun provideSafeRepository(safeDao: SafeDao, backupManager: BackupManager): SafeRepository {
+        return SafeRepository(safeDao, backupManager)
     }
 
     @Provides
     @Singleton
-    fun provideSaleInvoiceRepository(saleInvoiceDao: SaleInvoiceDao): SaleInvoiceRepository {
-        return SaleInvoiceRepository(saleInvoiceDao)
+    fun provideSaleInvoiceRepository(saleInvoiceDao: SaleInvoiceDao, backupManager: BackupManager): SaleInvoiceRepository {
+        return SaleInvoiceRepository(saleInvoiceDao, backupManager)
     }
 
     @Provides
     @Singleton
-    fun provideReceiveRepository(receiveDao: ReceiveDao): ReceiveRepository {
-        return ReceiveRepository(receiveDao)
+    fun provideReceiveRepository(receiveDao: ReceiveDao, backupManager: BackupManager): ReceiveRepository {
+        return ReceiveRepository(receiveDao, backupManager)
     }
 }

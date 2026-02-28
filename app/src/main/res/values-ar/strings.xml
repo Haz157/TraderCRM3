@@ -46,8 +46,9 @@
     <string name="title_add_receive">إضافة تحصيل</string>
     <string name="title_edit_receive">تعديل تحصيل</string>
     <string name="label_receive_amount">قيمة التحصيل</string>
+    <string name="label_receive_number">تحصيل رقم %1$s</string>
     <string name="label_current_balance">الرصيد الحالي</string>
-    <string name="label_new_balance">الرصيد الجديد</string>
+    <string name="label_new_balance">الرصيد بعد العملية</string>
     <string name="button_add_receive">إضافة تحصيل</string>
     <string name="message_no_receives">لا توجد عمليات تحصيل</string>
     <string name="error_receive_amount_required">قيمة التحصيل مطلوبة</string>
@@ -73,6 +74,7 @@
     <string name="section_cycles">الدورات</string>
     <string name="button_add_cycle">+ إضافة دورة</string>
     <string name="message_no_cycles">لا توجد دورات</string>
+    <string name="message_no_farms">لا توجد مزارع</string>
 
     <!-- Cycle Detail -->
     <string name="title_add_cycle">إضافة دورة</string>
@@ -91,6 +93,7 @@
     <string name="label_address">العنوان</string>
     <string name="label_notes">ملاحظات</string>
     <string name="button_add_customer">إضافة عميل</string>
+    <string name="message_no_customers">لا يوجد عملاء</string>
 
     <!-- Navigation -->
     <string name="content_description_back">رجوع</string>
@@ -137,6 +140,8 @@
     <string name="error_add_empty_weight">يرجى إدخال وزن فارغ واحد على الأقل</string>
     <string name="error_add_gross_weight">يرجى إدخال وزن إجمالي واحد على الأقل</string>
     <string name="error_create_invoice">خطأ في إنشاء الفاتورة: %1$s</string>
+    <string name="label_remaining">المتبقي</string>
+    <string name="label_print_statement">طباعة كشف الحساب للعميل</string>
 
     <!-- SafeViewModel -->
     <string name="error_safe_name_exists_ar">اسم الخزنة موجود بالفعل</string>
@@ -145,6 +150,14 @@
     <string name="success_update_safe">تم تعديل الخزنة بنجاح</string>
     <string name="error_update_safe">خطأ في تعديل الخزنة: %1$s</string>
     <string name="error_update_safe_status">خطأ في تحديث حالة الخزنة: %1$s</string>
+    <string name="success_add_customer">تم إضافة العميل بنجاح</string>
+    <string name="success_update_customer">تم تعديل بيانات العميل بنجاح</string>
+    <string name="error_add_customer">خطأ في إضافة العميل: %1$s</string>
+    <string name="error_update_customer">خطأ في تعديل العميل: %1$s</string>
+    <string name="success_add_farm">تم إضافة المزرعة بنجاح</string>
+    <string name="success_update_farm">تم تعديل بيانات المزرعة بنجاح</string>
+    <string name="error_add_farm">خطأ في إضافة المزرعة: %1$s</string>
+    <string name="error_update_farm">خطأ في تعديل المزرعة: %1$s</string>
 
     <!-- ReceiveViewModel -->
     <string name="error_select_customer_receive">يرجى اختيار عميل</string>
@@ -175,10 +188,34 @@
     <string name="format_weight_kg">%1$s كجم</string>
     <string name="format_weight_count_crates">%1$s كجم × %2$s قفص</string>
     <string name="content_description_delete">حذف</string>
+    <string name="button_delete">حذف</string>
+    <string name="dialog_title_confirm_delete">تأكيد الحذف</string>
 
     <!-- UI Strings - InvoiceDialogs -->
     <string name="label_invoice_number">فاتورة رقم %1$s</string>
     <string name="label_receive_amount_with_value">قيمة التحصيل: %1$s</string>
     <string name="placeholder_amount">0.00</string>
     <string name="button_save">حفظ</string>
+    <!-- Backup -->
+    <string name="action_backup">نسخة احتياطية</string>
+    <string name="content_description_backup">حفظ نسخة احتياطية من البيانات</string>
+    <string name="title_backup">نسخ البيانات احتياطيًا</string>
+    <string name="label_select_all">تحديد الكل</string>
+    <string name="label_farms_data">بيانات المزارع</string>
+    <string name="label_customers_data">بيانات العملاء</string>
+    <string name="label_safes_data">بيانات الخزن</string>
+    <string name="label_invoices_data">بيانات الفواتير</string>
+    <string name="label_receives_data">بيانات التحصيلات</string>
+    <string name="button_start_backup">بدء النسخ الاحتياطي</string>
+    <string name="message_preparing_backup">جاري تجهيز النسخة الاحتياطية...</string>
+    <string name="message_backup_success">النسخة الاحتياطية جاهزة للمشاركة</string>
+    <string name="error_no_category_selected">يرجى اختيار قسم واحد على الأقل</string>
+    <string name="notification_backup_title">تنبيه النسخ الاحتياطي</string>
+    <string name="notification_backup_body">يرجى رفع ملف النسخة الاحتياطية على Google Drive لتتمكن من استعادة بياناتك لاحقاً.</string>
+    <string name="button_restore_db">استعادة قاعدة البيانات</string>
+    <string name="message_restore_success">تم استعادة قاعدة البيانات بنجاح. سيتم إعادة تشغيل التطبيق الآن.</string>
+    <string name="message_restore_error">خطأ في استعادة قاعدة البيانات: %s</string>
+    <string name="dialog_title_confirm_restore">تأكيد الاستعادة</string>
+    <string name="dialog_message_confirm_restore">هل أنت متأكد من رغبتك في استعادة قاعدة البيانات؟ سيتم استبدال البيانات الحالية وإعادة تشغيل التطبيق.</string>
+    <string name="dialog_button_cancel">إلغاء</string>
 </resources>

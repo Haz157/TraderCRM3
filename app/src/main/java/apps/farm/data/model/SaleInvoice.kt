@@ -58,6 +58,7 @@ data class SaleInvoice(
     val price: Double = 0.0,
     val totalPrice: Double = 0.0,
     val totalInvoice: Double = 0.0,
+    val invoiceNo: Int = 0,
     val createdDate: Long = System.currentTimeMillis(),
     val isBlocked: Boolean = false
 )

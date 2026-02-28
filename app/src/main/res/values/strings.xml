@@ -46,8 +46,9 @@
     <string name="title_add_receive">Add Receive</string>
     <string name="title_edit_receive">Edit Receive</string>
     <string name="label_receive_amount">Receive Amount</string>
+    <string name="label_receive_number">Receive No. %1$s</string>
     <string name="label_current_balance">Current Balance</string>
-    <string name="label_new_balance">New Balance</string>
+    <string name="label_new_balance">Balance after operation</string>
     <string name="button_add_receive">Add Receive</string>
     <string name="message_no_receives">No receives available</string>
     <string name="error_receive_amount_required">Receive amount is required</string>
@@ -73,6 +74,7 @@
     <string name="section_cycles">Cycles</string>
     <string name="button_add_cycle">+ Add Cycle</string>
     <string name="message_no_cycles">No cycles available</string>
+    <string name="message_no_farms">No farms available</string>
 
     <!-- Cycle Detail -->
     <string name="title_add_cycle">Add Cycle</string>
@@ -91,6 +93,7 @@
     <string name="label_address">Address</string>
     <string name="label_notes">Notes</string>
     <string name="button_add_customer">Add Customer</string>
+    <string name="message_no_customers">No customers available</string>
 
     <!-- Navigation -->
     <string name="content_description_back">Back</string>
@@ -168,6 +171,8 @@
     <string name="format_weight_kg">%1$s kg</string>
     <string name="format_weight_count_crates">%1$s kg × %2$s crates</string>
     <string name="content_description_delete">Delete</string>
+    <string name="button_delete">Delete</string>
+    <string name="dialog_title_confirm_delete">Confirm Delete</string>
 
     <!-- UI Strings - InvoiceDialogs -->
     <string name="label_invoice_number">Invoice #%1$s</string>
@@ -177,7 +182,38 @@
     <!-- Common Buttons -->
     <string name="button_add">Add</string>
     <string name="button_cancel">Cancel</string>
-
+    <string name="success_add_customer">Customer added successfully</string>
+    <string name="success_update_customer">Customer updated successfully</string>
+    <string name="error_add_customer">Error adding customer: %1$s</string>
+    <string name="error_update_customer">Error updating customer: %1$s</string>
+    <string name="success_add_farm">Farm added successfully</string>
+    <string name="success_update_farm">Farm updated successfully</string>
+    <string name="error_add_farm">Error adding farm: %1$s</string>
+    <string name="error_update_farm">Error updating farm: %1$s</string>
     <!-- Invoice Extra -->
     <string name="label_weight_kg">Weight (kg)</string>
+    <string name="label_remaining">Remaining</string>
+    <string name="label_print_statement">Print Statement</string>
+    <!-- Backup -->
+    <string name="action_backup">Backup</string>
+    <string name="content_description_backup">Backup Database</string>
+    <string name="title_backup">Backup Data</string>
+    <string name="label_select_all">Select All</string>
+    <string name="label_farms_data">Farms Data</string>
+    <string name="label_customers_data">Customers Data</string>
+    <string name="label_safes_data">Safes Data</string>
+    <string name="label_invoices_data">Invoices Data</string>
+    <string name="label_receives_data">Collections Data</string>
+    <string name="button_start_backup">Start Backup</string>
+    <string name="message_preparing_backup">Preparing backup…</string>
+    <string name="message_backup_success">Backup file ready to share</string>
+    <string name="error_no_category_selected">Please select at least one category</string>
+    <string name="notification_backup_title">Backup Reminder</string>
+    <string name="notification_backup_body">Please upload your backup file to Google Drive to ensure you can restore your data later.</string>
+    <string name="button_restore_db">Restore Database</string>
+    <string name="message_restore_success">Database restored successfully. Application will now restart.</string>
+    <string name="message_restore_error">Error restoring database: %s</string>
+    <string name="dialog_title_confirm_restore">Confirm Restore</string>
+    <string name="dialog_message_confirm_restore">Are you sure you want to restore the database? Current data will be overwritten and the app will restart.</string>
+    <string name="dialog_button_cancel">Cancel</string>
 </resources>

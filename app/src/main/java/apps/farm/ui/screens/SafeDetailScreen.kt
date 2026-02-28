@@ -58,7 +58,7 @@ fun SafeDetailScreen(
             val safe = safeViewModel.getSafeById(safeId)
             if (safe != null) {
                 name = safe.name
-                balance = safe.balance.toString()
+                balance = if (safe.balance == 0.0) "" else safe.balance.toString()
                 note = safe.note
                 isBlocked = safe.blocked
             }
@@ -151,7 +151,7 @@ fun SafeDetailScreen(
                         onValueChange = { balance = it },
                         label = stringResource(R.string.label_opening_balance),
                         icon = Icons.Default.AccountBalance,
-                        placeholder = stringResource(R.string.label_opening_balance),
+                        placeholder = "0.0",
                         isDecimal = true,
                         maxDecimals = 3,
                         imeAction = ImeAction.Next,

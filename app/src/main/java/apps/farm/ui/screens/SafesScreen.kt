@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.material.icons.filled.Edit
 import apps.farm.R
 import apps.farm.data.model.Safe
 import apps.farm.ui.theme.*
@@ -27,6 +28,7 @@ import apps.farm.viewmodel.SafeViewModel
 @Composable
 fun SafesScreen(
     safeViewModel: SafeViewModel = hiltViewModel(),
+    onNavigateToSafeView: (String) -> Unit,
     onNavigateToSafeDetail: (String?) -> Unit
 ) {
     val safes by safeViewModel.allSafes.collectAsState(initial = emptyList())
@@ -48,6 +50,7 @@ fun SafesScreen(
             ) { safe ->
                 SafeCard(
                     safe = safe,
+                    onClick = { onNavigateToSafeView(safe.id) },
                     onEdit = { onNavigateToSafeDetail(safe.id) },
                     onToggleBlock = { safeViewModel.toggleBlockStatus(safe.id, safe.blocked) }
                 )
@@ -60,6 +63,7 @@ fun SafesScreen(
 @Composable
 fun SafeCard(
     safe: Safe,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onToggleBlock: () -> Unit
 ) {
@@ -70,7 +74,7 @@ fun SafeCard(
     )
 
     Card(
-        onClick = onEdit,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .scale(animatedScale),
@@ -134,23 +138,27 @@ fun SafeCard(
                     }
                 }
 
-                // Toggle Button
-                FilledIconToggleButton(
-                    checked = !safe.blocked,
-                    onCheckedChange = { onToggleBlock() },
-                    modifier = Modifier.size(44.dp),
-                    colors = IconButtonDefaults.filledIconToggleButtonColors(
-                        checkedContainerColor = StatusActiveContainer,
-                        checkedContentColor = StatusActive,
-                        containerColor = StatusBlockedContainer,
-                        contentColor = StatusBlocked
-                    )
-                ) {
-                    Icon(
-                        imageVector = if (safe.blocked) Icons.Default.Block else Icons.Default.CheckCircle,
-                        contentDescription = if (safe.blocked) stringResource(R.string.status_blocked) else stringResource(R.string.status_active),
-                        modifier = Modifier.size(20.dp)
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Default.Edit, contentDescription = "تعديل", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+                    }
+                    FilledIconToggleButton(
+                        checked = !safe.blocked,
+                        onCheckedChange = { onToggleBlock() },
+                        modifier = Modifier.size(36.dp),
+                        colors = IconButtonDefaults.filledIconToggleButtonColors(
+                            checkedContainerColor = StatusActiveContainer,
+                            checkedContentColor = StatusActive,
+                            containerColor = StatusBlockedContainer,
+                            contentColor = StatusBlocked
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (safe.blocked) Icons.Default.Block else Icons.Default.CheckCircle,
+                            contentDescription = if (safe.blocked) stringResource(R.string.status_blocked) else stringResource(R.string.status_active),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 

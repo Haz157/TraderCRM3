@@ -43,6 +43,7 @@ import java.util.UUID
 fun CustomerDetailScreen(
     customerId: String?,
     onNavigateBack: () -> Unit,
+    onNavigateToPdfViewer: (String) -> Unit,
     customerViewModel: CustomerViewModel = hiltViewModel()
 ) {
     var name by remember { mutableStateOf("") }
@@ -54,7 +55,12 @@ fun CustomerDetailScreen(
     var isEditing by remember { mutableStateOf(false) }
     var showMessage by remember { mutableStateOf<String?>(null) }
     var nameError by remember { mutableStateOf(false) }
+    
+    // PDF related states
+    var showDatePickerDialog by remember { mutableStateOf(false) }
+    var isGeneratingPdf by remember { mutableStateOf(false) }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val allCustomers by customerViewModel.allCustomers.collectAsState(initial = emptyList())
@@ -64,7 +70,7 @@ fun CustomerDetailScreen(
             isEditing = true
             customerViewModel.getCustomerById(customerId)?.let { customer ->
                 name = customer.name
-                balance = customer.balance.toString()
+                balance = if (customer.balance == 0.0) "" else customer.balance.toString()
                 phone = customer.phone
                 address = customer.address
                 note = customer.note
@@ -159,7 +165,7 @@ fun CustomerDetailScreen(
                         onValueChange = { balance = it },
                         label = stringResource(R.string.label_opening_balance),
                         icon = Icons.Default.AccountBalance,
-                        placeholder = stringResource(R.string.label_opening_balance),
+                        placeholder = "0.0",
                         isDecimal = true,
                         maxDecimals = 3,
                         imeAction = ImeAction.Next,
@@ -218,6 +224,27 @@ fun CustomerDetailScreen(
                     isBlocked = isBlocked,
                     onToggle = { isBlocked = !isBlocked }
                 )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Print Statement Button
+                Button(
+                    onClick = { showDatePickerDialog = true },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    )
+                ) {
+                    if (isGeneratingPdf) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(24.dp))
+                    } else {
+                        Icon(Icons.Default.EditNote, contentDescription = null) // Using a placeholder icon as print is not directly available in standard material icons easily
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.label_print_statement), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -234,9 +261,9 @@ fun CustomerDetailScreen(
 
                     // Check if name is unique
                     val isNameUnique = if (isEditing) {
-                        allCustomers.none { it.id != customerId && it.name.equals(name, ignoreCase = true) }
+                        allCustomers.none { it.customer.id != customerId && it.customer.name.equals(name, ignoreCase = true) }
                     } else {
-                        allCustomers.none { it.name.equals(name, ignoreCase = true) }
+                        allCustomers.none { it.customer.name.equals(name, ignoreCase = true) }
                     }
                     
                     if (!isNameUnique) {
@@ -258,11 +285,22 @@ fun CustomerDetailScreen(
 
                     scope.launch {
                         if (isEditing) {
-                            customerViewModel.updateCustomer(customer)
+                            customerViewModel.updateCustomer(customer) { success, message ->
+                                if (success) {
+                                    onNavigateBack()
+                                } else {
+                                    showMessage = message
+                                }
+                            }
                         } else {
-                            customerViewModel.insertCustomer(customer)
+                            customerViewModel.insertCustomer(customer) { success, message ->
+                                if (success) {
+                                    onNavigateBack()
+                                } else {
+                                    showMessage = message
+                                }
+                            }
                         }
-                        onNavigateBack()
                     }
                 },
                 modifier = Modifier
@@ -302,6 +340,32 @@ fun CustomerDetailScreen(
             },
             title = { Text(stringResource(R.string.dialog_title_alert)) },
             text = { Text(message) }
+        )
+    }
+
+    if (showDatePickerDialog) {
+        DateRangePickerDialog(
+            onDismiss = { showDatePickerDialog = false },
+            onConfirm = { startDate, endDate ->
+                showDatePickerDialog = false
+                isGeneratingPdf = true
+                customerId?.let { id ->
+                    customerViewModel.generateCustomerStatement(
+                        context = context,
+                        customerId = id,
+                        startDate = startDate,
+                        endDate = endDate,
+                        onPdfGenerated = { file ->
+                            isGeneratingPdf = false
+                            if (file != null) {
+                                onNavigateToPdfViewer(file.absolutePath)
+                            } else {
+                                showMessage = "Error generating PDF"
+                            }
+                        }
+                    )
+                }
+            }
         )
     }
 }

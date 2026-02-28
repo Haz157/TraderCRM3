@@ -1,19 +1,31 @@
 package apps.farm.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import apps.farm.R
 import apps.farm.data.model.Cycle
 import apps.farm.data.repository.CycleRepository
+import apps.farm.data.repository.FarmRepository
+import apps.farm.data.repository.CustomerRepository
+import apps.farm.data.repository.SaleInvoiceRepository
+import apps.farm.utils.CycleReportPdfGenerator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
+import apps.farm.data.model.CustomerWithBalance
+
 
 @HiltViewModel
 class CycleViewModel @Inject constructor(
     private val repository: CycleRepository,
+    private val farmRepository: FarmRepository,
+    private val customerRepository: CustomerRepository,
+    private val saleInvoiceRepository: SaleInvoiceRepository,
     application: Application
 ) : AndroidViewModel(application) {
 
@@ -53,5 +65,58 @@ class CycleViewModel @Inject constructor(
 
     suspend fun getCycleById(id: String): Cycle? {
         return repository.getCycleById(id)
+    }
+
+    fun generateDetailedCycleReport(
+        context: Context,
+        cycleId: String,
+        onPdfGenerated: (File?) -> Unit
+    ) {
+        viewModelScope.launch {
+            val cycle = repository.getCycleById(cycleId) ?: return@launch
+            val farm = farmRepository.getFarmById(cycle.farmId) ?: return@launch
+            val invoices = saleInvoiceRepository.getInvoicesByCycleSync(cycleId)
+            val allCustomers = customerRepository.allCustomers.first().associateBy { it.customer.id }
+
+            val items = mutableListOf<CycleReportPdfGenerator.CycleReportItem>()
+            for (inv in invoices) {
+                val customerName = allCustomers[inv.customerId]?.customer?.name ?: "تاجر غير معروف"
+                // Row 1: Base invoice - credit = weight * price
+                items.add(CycleReportPdfGenerator.CycleReportItem(
+                    type = "فاتورة بيع",
+                    merchantName = customerName,
+                    weight = inv.netWeight,
+                    price = inv.price,
+                    credit = inv.netWeight * inv.price,
+                    debit = 0.0
+                ))
+                // Row 2: Addition (if any) - credit = addition
+                if (inv.addition > 0) {
+                    items.add(CycleReportPdfGenerator.CycleReportItem(
+                        type = "تكلفة إضافية",
+                        merchantName = customerName,
+                        weight = 0.0,
+                        price = 0.0,
+                        credit = inv.addition,
+                        debit = 0.0
+                    ))
+                }
+                // Row 3: Discount (if any) - debit = discount
+                if (inv.discount > 0) {
+                    items.add(CycleReportPdfGenerator.CycleReportItem(
+                        type = "خصم",
+                        merchantName = customerName,
+                        weight = 0.0,
+                        price = 0.0,
+                        credit = 0.0,
+                        debit = inv.discount
+                    ))
+                }
+            }
+
+            val generator = CycleReportPdfGenerator(context)
+            val file = generator.generatePdf(farm, cycle, items)
+            onPdfGenerated(file)
+        }
     }
 }
