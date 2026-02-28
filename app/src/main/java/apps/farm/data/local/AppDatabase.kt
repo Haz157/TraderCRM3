@@ -21,7 +21,7 @@ import apps.farm.data.model.SaleInvoice
 
 @Database(
     entities = [Farm::class, Cycle::class, Customer::class, Safe::class, SaleInvoice::class, EmptyWeight::class, GrossWeight::class, Receive::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

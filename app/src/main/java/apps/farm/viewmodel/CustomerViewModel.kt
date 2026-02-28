@@ -100,7 +100,8 @@ class CustomerViewModel @Inject constructor(
                     transactions.add(
                         CustomerTransaction(
                             date = r.createdDate,
-                            typeName = "تحصيل مستقل رقم ${r.receiveNo}",
+                            typeName = "تحصيل مستقل",
+                            operationId = r.receiveNo.toString(),
                             cycleName = null,
                             farmName = null,
                             netWeight = null,
@@ -115,7 +116,8 @@ class CustomerViewModel @Inject constructor(
                     transactions.add(
                         CustomerTransaction(
                             date = r.createdDate,
-                            typeName = "خصم مستقل رقم ${r.receiveNo}",
+                            typeName = "خصم مستقل",
+                            operationId = r.receiveNo.toString(),
                             cycleName = null,
                             farmName = null,
                             netWeight = null,
@@ -136,7 +138,8 @@ class CustomerViewModel @Inject constructor(
                 transactions.add(
                     CustomerTransaction(
                         date = inv.createdDate,
-                        typeName = "فاتورة بيع رقم ${inv.invoiceNo}",
+                        typeName = "فاتورة بيع",
+                        operationId = inv.invoiceNo.toString(),
                         cycleName = cycleName,
                         farmName = farmName,
                         netWeight = inv.netWeight,
@@ -152,7 +155,8 @@ class CustomerViewModel @Inject constructor(
                     transactions.add(
                         CustomerTransaction(
                             date = inv.createdDate + 1, // Slight offset for sorting priority
-                            typeName = "تكلفة إضافية فاتورة ${inv.invoiceNo}",
+                            typeName = "تكلفة إضافية",
+                            operationId = inv.invoiceNo.toString(),
                             cycleName = cycleName,
                             farmName = farmName,
                             netWeight = null,
@@ -169,7 +173,8 @@ class CustomerViewModel @Inject constructor(
                     transactions.add(
                         CustomerTransaction(
                             date = inv.createdDate + 2,
-                            typeName = "خصم فاتورة ${inv.invoiceNo}",
+                            typeName = "خصم فاتورة",
+                            operationId = inv.invoiceNo.toString(),
                             cycleName = cycleName,
                             farmName = farmName,
                             netWeight = null,
@@ -186,7 +191,8 @@ class CustomerViewModel @Inject constructor(
                     transactions.add(
                         CustomerTransaction(
                             date = inv.createdDate + 3,
-                            typeName = "تحصيل فاتورة ${inv.invoiceNo}",
+                            typeName = "تحصيل فاتورة",
+                            operationId = inv.invoiceNo.toString(),
                             cycleName = cycleName,
                             farmName = farmName,
                             netWeight = null,

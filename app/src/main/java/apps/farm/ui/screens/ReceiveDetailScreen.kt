@@ -189,7 +189,7 @@ fun ReceiveDetailScreen(
 
             // Balance Summary
             if (receiveId == null && selectedCustomer != null) {
-                val newBalance = customerBalance + receiveAmount + discountAmount
+                val newBalance = customerBalance - receiveAmount - discountAmount
                 Card(
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = PrimaryContainer.copy(alpha = 0.3f)),

@@ -280,6 +280,7 @@ fun CustomerDetailScreen(
                         phone = phone,
                         address = address,
                         note = note,
+                        invoiceId = "", // Keeping the column but not populating via UI
                         blocked = isBlocked
                     )
 

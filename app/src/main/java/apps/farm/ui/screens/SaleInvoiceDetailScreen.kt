@@ -46,6 +46,7 @@ import java.util.*
 fun SaleInvoiceDetailScreen(
     invoiceId: String?,
     onNavigateBack: () -> Unit,
+    onSaveSuccess: () -> Unit = onNavigateBack,
     invoiceViewModel: SaleInvoiceViewModel = hiltViewModel()
 ) {
     val scope = rememberCoroutineScope()
@@ -434,12 +435,12 @@ fun SaleInvoiceDetailScreen(
                 onClick = {
                     if (invoiceId == null) {
                         invoiceViewModel.createInvoice(
-                            onSuccess = { onNavigateBack() },
+                            onSuccess = { onSaveSuccess() },
                             onError = { showMessage = it }
                         )
                     } else {
                         invoiceViewModel.updateInvoice(
-                            onSuccess = { onNavigateBack() },
+                            onSuccess = { onSaveSuccess() },
                             onError = { showMessage = it }
                         )
                     }

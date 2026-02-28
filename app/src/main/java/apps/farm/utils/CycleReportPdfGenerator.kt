@@ -93,10 +93,10 @@ class CycleReportPdfGenerator(private val context: Context) {
         canvas.drawRect(margin, yPosition - 15f, pageWidth - margin, yPosition + headerHeight - 15f, paint)
 
         // Draw Headers
-        var currentX = margin
+        var currentX = pageWidth - margin
         for (i in headers.indices) {
-            canvas.drawText(headers[i], currentX + colWidths[i] - 5f, yPosition + 3f, headerPaint)
-            currentX += colWidths[i]
+            canvas.drawText(headers[i], currentX - 5f, yPosition + 3f, headerPaint)
+            currentX -= colWidths[i]
         }
         yPosition += headerHeight
 
@@ -116,10 +116,10 @@ class CycleReportPdfGenerator(private val context: Context) {
             
             paint.color = Color.BLACK
             paint.textAlign = Paint.Align.RIGHT
-            var x = margin
+            var x = pageWidth - margin
             for (i in vals.indices) {
-                canvas.drawText(vals[i], x + colWidths[i] - 5f, currentY, paint)
-                x += colWidths[i]
+                canvas.drawText(vals[i], x - 5f, currentY, paint)
+                x -= colWidths[i]
             }
             paint.isFakeBoldText = false
         }
@@ -147,10 +147,10 @@ class CycleReportPdfGenerator(private val context: Context) {
                 // Re-draw headers
                 paint.color = themeColor
                 canvas.drawRect(margin, yPosition - 15f, pageWidth - margin, yPosition + headerHeight - 15f, paint)
-                var nx = margin
+                var nx = pageWidth - margin
                 for (i in headers.indices) {
-                    canvas.drawText(headers[i], nx + colWidths[i] - 5f, yPosition + 3f, headerPaint)
-                    nx += colWidths[i]
+                    canvas.drawText(headers[i], nx - 5f, yPosition + 3f, headerPaint)
+                    nx -= colWidths[i]
                 }
                 yPosition += headerHeight
             }

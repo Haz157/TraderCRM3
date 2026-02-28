@@ -92,6 +92,7 @@
     <string name="label_phone_number">Phone Number</string>
     <string name="label_address">Address</string>
     <string name="label_notes">Notes</string>
+    <string name="label_invoice_id">Invoice ID</string>
     <string name="button_add_customer">Add Customer</string>
     <string name="message_no_customers">No customers available</string>
 

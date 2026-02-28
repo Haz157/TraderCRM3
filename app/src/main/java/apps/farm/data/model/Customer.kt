@@ -13,5 +13,6 @@ data class Customer(
     val phone: String = "",
     val address: String = "",
     val note: String = "",
+    val invoiceId: String = "",
     val blocked: Boolean = false
 )

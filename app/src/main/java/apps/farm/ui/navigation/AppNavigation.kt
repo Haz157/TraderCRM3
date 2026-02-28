@@ -170,7 +170,10 @@ fun AppNavigation(navController: NavHostController) {
 
             SaleInvoiceDetailScreen(
                 invoiceId = actualInvoiceId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onSaveSuccess = {
+                    navController.popBackStack(Screen.Main.route, false)
+                }
             )
         }
 

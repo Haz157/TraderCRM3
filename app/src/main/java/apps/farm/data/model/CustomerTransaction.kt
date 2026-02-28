@@ -2,7 +2,8 @@ package apps.farm.data.model
 
 data class CustomerTransaction(
     val date: Long,
-    val typeName: String, // E.g., "فاتورة بيع رقم 1", "تحصيل"
+    val typeName: String, // E.g., "فاتورة بيع", "تحصيل"
+    val operationId: String?, // Invoice/Receive No
     val cycleName: String?,
     val farmName: String?,
     val netWeight: Double?, // Only populated for invoices

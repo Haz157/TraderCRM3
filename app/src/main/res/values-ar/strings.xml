@@ -92,6 +92,7 @@
     <string name="label_phone_number">رقم الهاتف</string>
     <string name="label_address">العنوان</string>
     <string name="label_notes">ملاحظات</string>
+    <string name="label_invoice_id">كود الفاتورة</string>
     <string name="button_add_customer">إضافة عميل</string>
     <string name="message_no_customers">لا يوجد عملاء</string>
 

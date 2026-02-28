@@ -83,7 +83,7 @@ class CycleViewModel @Inject constructor(
                 val customerName = allCustomers[inv.customerId]?.customer?.name ?: "تاجر غير معروف"
                 // Row 1: Base invoice - credit = weight * price
                 items.add(CycleReportPdfGenerator.CycleReportItem(
-                    type = "فاتورة بيع",
+                    type = "فاتورة بيع رقم ${inv.invoiceNo}",
                     merchantName = customerName,
                     weight = inv.netWeight,
                     price = inv.price,
@@ -93,7 +93,7 @@ class CycleViewModel @Inject constructor(
                 // Row 2: Addition (if any) - credit = addition
                 if (inv.addition > 0) {
                     items.add(CycleReportPdfGenerator.CycleReportItem(
-                        type = "تكلفة إضافية",
+                        type = "تكلفة إضافية فاتورة ${inv.invoiceNo}",
                         merchantName = customerName,
                         weight = 0.0,
                         price = 0.0,
@@ -104,7 +104,7 @@ class CycleViewModel @Inject constructor(
                 // Row 3: Discount (if any) - debit = discount
                 if (inv.discount > 0) {
                     items.add(CycleReportPdfGenerator.CycleReportItem(
-                        type = "خصم",
+                        type = "خصم فاتورة ${inv.invoiceNo}",
                         merchantName = customerName,
                         weight = 0.0,
                         price = 0.0,
