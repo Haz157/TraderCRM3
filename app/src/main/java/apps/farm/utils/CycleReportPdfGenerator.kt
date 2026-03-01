@@ -134,6 +134,7 @@ class CycleReportPdfGenerator(private val context: Context) {
 
         var totalCredit = 0.0
         var totalDebit = 0.0
+        var totalReceive = 0.0
 
         fun formatNum(value: Double): String {
             if (value == 0.0) return "-"
@@ -178,6 +179,7 @@ class CycleReportPdfGenerator(private val context: Context) {
             
             totalCredit += item.credit
             totalDebit += item.debit
+            totalReceive += item.invoiceReceive
             yPosition += 20f
         }
 
@@ -186,7 +188,8 @@ class CycleReportPdfGenerator(private val context: Context) {
         drawRow(arrayOf(
             "", "الإجمالي", "", "",
             formatNum(totalDebit),
-            "", "",
+            formatNum(totalReceive),
+            "",
             formatNum(totalCredit)
         ), false, yPosition, isSummary = true)
         
