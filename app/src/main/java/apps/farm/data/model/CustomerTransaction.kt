@@ -10,5 +10,7 @@ data class CustomerTransaction(
     val price: Double?, // Only populated for invoices
     val debit: Double, // Amount added to balance (negative for balance, e.g. invoice total)
     val credit: Double, // Amount subtracted from balance (positive for balance, e.g. receive amount)
-    val cumulativeBalance: Double
+    val cumulativeBalance: Double,
+    val invoiceReceive: Double = 0.0, // Receive amount tied to this invoice
+    val invoiceRemaining: Double = 0.0 // Remaining = totalInvoice - invoiceReceive
 )

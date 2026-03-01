@@ -146,7 +146,9 @@ class CustomerViewModel @Inject constructor(
                         price = inv.price,
                         debit = inv.totalPrice,
                         credit = 0.0,
-                        cumulativeBalance = 0.0
+                        cumulativeBalance = 0.0,
+                        invoiceReceive = inv.receiveAmount,
+                        invoiceRemaining = inv.totalInvoice - inv.receiveAmount
                     )
                 )
                 
