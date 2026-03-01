@@ -84,9 +84,9 @@ class CustomerStatementPdfGenerator(private val context: Context) {
             yPosition += 30f
         }
 
-        // Table Setup - added التحصيل and الباقي من الفاتورة columns
-        val colWidths = floatArrayOf(55f, 35f, 90f, 40f, 40f, 55f, 55f, 60f, 65f, 60f)
-        val headers = arrayOf("التاريخ", "رقم", "نوع العملية", "الكمية", "السعر", "مدين", "دائن", "التحصيل", "الباقي", "التراكمي")
+        // Table Setup
+        val colWidths = floatArrayOf(65f, 40f, 110f, 45f, 45f, 65f, 65f, 80f)
+        val headers = arrayOf("التاريخ", "رقم", "نوع العملية", "الكمية", "السعر", "مدين", "دائن", "التراكمي")
         
         // Draw Header Background
         val headerHeight = 25f
@@ -127,7 +127,7 @@ class CustomerStatementPdfGenerator(private val context: Context) {
 
         // Opening Balance
         drawRow(arrayOf(
-            "-", "-", "رصيد افتتاحي", "-", "-", "-", "-", "-", "-", formatDecimal(openingBalance)
+            "-", "-", "رصيد افتتاحي", "-", "-", "-", "-", formatDecimal(openingBalance)
         ), false, yPosition)
         yPosition += 20f
 
@@ -153,7 +153,6 @@ class CustomerStatementPdfGenerator(private val context: Context) {
                 yPosition += headerHeight
             }
 
-            val isInvoiceRow = trans.typeName == "فاتورة بيع"
             drawRow(arrayOf(
                 sdf.format(Date(trans.date)),
                 trans.operationId ?: "-",
@@ -162,8 +161,6 @@ class CustomerStatementPdfGenerator(private val context: Context) {
                 formatDecimal(trans.price),
                 if (trans.debit > 0) formatDecimal(trans.debit) else "-",
                 if (trans.credit > 0) formatDecimal(trans.credit) else "-",
-                if (isInvoiceRow && trans.invoiceReceive > 0) formatDecimal(trans.invoiceReceive) else "-",
-                if (isInvoiceRow) formatDecimal(trans.invoiceRemaining) else "-",
                 formatDecimal(trans.cumulativeBalance)
             ), index % 2 == 0, yPosition)
             yPosition += 20f

@@ -28,7 +28,10 @@ class CycleReportPdfGenerator(private val context: Context) {
         val weight: Double,
         val price: Double,
         val credit: Double, // الدائن
-        val debit: Double // المدين
+        val debit: Double, // المدين
+        val invoiceDate: Long = 0L, // تاريخ الفاتورة
+        val invoiceReceive: Double = 0.0, // التحصيل في الفاتورة
+        val invoiceRemaining: Double = 0.0 // الباقي = إجمالي - تحصيل
     )
 
     fun generatePdf(
@@ -83,9 +86,9 @@ class CycleReportPdfGenerator(private val context: Context) {
         canvas.drawText("الدورة: ${cycle.cycleName}", pageWidth - margin, yPosition, paint)
         yPosition += 30f
 
-        // Table Setup
-        val headers = arrayOf("البيان / التاجر", "الوزن", "السعر", "المدين", "الدائن")
-        val colWidths = floatArrayOf(215f, 60f, 60f, 90f, 90f) // Total 515
+        // Table Setup - Optimized widths to fit 515f (A4 - margins)
+        val headers = arrayOf("التاريخ", "البيان / التاجر", "الوزن", "السعر", "المدين", "تحصيل", "باقي", "الدائن")
+        val colWidths = floatArrayOf(60f, 230f, 35f, 35f, 40f, 35f, 35f, 45f)
         
         // Draw Header Background
         val headerHeight = 25f
@@ -94,6 +97,7 @@ class CycleReportPdfGenerator(private val context: Context) {
 
         // Draw Headers
         var currentX = pageWidth - margin
+        headerPaint.textSize = 9f // Slightly smaller for headers to ensure fit
         for (i in headers.indices) {
             canvas.drawText(headers[i], currentX - 5f, yPosition + 3f, headerPaint)
             currentX -= colWidths[i]
@@ -108,7 +112,9 @@ class CycleReportPdfGenerator(private val context: Context) {
                 paint.isFakeBoldText = true
             } else if (isZebra) {
                 paint.color = zebraColor
+                paint.alpha = 100
                 canvas.drawRect(margin, currentY - 15f, pageWidth - margin, currentY + 5f, paint)
+                paint.alpha = 255 // Reset alpha for text
                 paint.isFakeBoldText = false
             } else {
                 paint.isFakeBoldText = false
@@ -116,9 +122,11 @@ class CycleReportPdfGenerator(private val context: Context) {
             
             paint.color = Color.BLACK
             paint.textAlign = Paint.Align.RIGHT
+            paint.textSize = 9f
             var x = pageWidth - margin
             for (i in vals.indices) {
-                canvas.drawText(vals[i], x - 5f, currentY, paint)
+                val text = vals[i]
+                canvas.drawText(text, x - 5f, currentY, paint)
                 x -= colWidths[i]
             }
             paint.isFakeBoldText = false
@@ -128,7 +136,7 @@ class CycleReportPdfGenerator(private val context: Context) {
         var totalDebit = 0.0
 
         fun formatNum(value: Double): String {
-            if (value == 0.0) return ""
+            if (value == 0.0) return "-"
             return if (value == value.toLong().toDouble()) {
                 String.format(Locale.ENGLISH, "%,.0f", value)
             } else {
@@ -155,11 +163,16 @@ class CycleReportPdfGenerator(private val context: Context) {
                 yPosition += headerHeight
             }
 
+            val sdfDate = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
+            val isInvoiceRow = item.invoiceDate > 0L
             drawRow(arrayOf(
+                if (isInvoiceRow) sdfDate.format(Date(item.invoiceDate)) else "-",
                 "${item.type} - ${item.merchantName}",
                 formatNum(item.weight),
                 formatNum(item.price),
                 formatNum(item.debit),
+                if (isInvoiceRow && item.invoiceReceive > 0) formatNum(item.invoiceReceive) else "-",
+                if (isInvoiceRow) formatNum(item.invoiceRemaining) else "-",
                 formatNum(item.credit)
             ), index % 2 == 1, yPosition)
             
@@ -168,21 +181,45 @@ class CycleReportPdfGenerator(private val context: Context) {
             yPosition += 20f
         }
 
-        // Summary Highlight
-        yPosition += 10f
-        drawRow(arrayOf(
-            "الإجمالي", "", "",
-            String.format(Locale.ENGLISH, "%,.2f", totalDebit),
-            String.format(Locale.ENGLISH, "%,.2f", totalCredit)
-        ), false, yPosition, isSummary = true)
+        // Summary Box
+        yPosition += 30f
+        if (yPosition > pageInfo.pageHeight - 100f) {
+            pdfDocument.finishPage(page)
+            page = pdfDocument.startPage(pageInfo)
+            canvas = page.canvas
+            yPosition = 50f
+        }
+
+        val boxWidth = 200f
+        val boxHeight = 80f
+        val boxX = pageWidth - margin - boxWidth
         
-        yPosition += 40f
+        paint.color = summaryBgColor
+        canvas.drawRoundRect(boxX, yPosition, boxX + boxWidth, yPosition + boxHeight, 10f, 10f, paint)
+        
+        paint.color = themeColor
+        paint.textAlign = Paint.Align.CENTER
+        paint.textSize = 12f
+        paint.isFakeBoldText = true
+        canvas.drawText("ملخص الحساب", boxX + boxWidth / 2, yPosition + 25f, paint)
+        
+        paint.color = Color.BLACK
+        paint.textSize = 10f
+        paint.textAlign = Paint.Align.RIGHT
+        canvas.drawText("إجمالي مدين:", boxX + boxWidth - 15f, yPosition + 45f, paint)
+        canvas.drawText("إجمالي دائن:", boxX + boxWidth - 15f, yPosition + 65f, paint)
+        
+        paint.textAlign = Paint.Align.LEFT
+        canvas.drawText(formatNum(totalDebit), boxX + 15f, yPosition + 45f, paint)
+        canvas.drawText(formatNum(totalCredit), boxX + 15f, yPosition + 65f, paint)
+        
+        yPosition += boxHeight + 30f
         val net = totalDebit - totalCredit
-        paint.textSize = 14f
+        paint.textSize = 16f
         paint.isFakeBoldText = true
         paint.textAlign = Paint.Align.RIGHT
         paint.color = themeColor
-        canvas.drawText("الصافي النهائي: ${String.format(Locale.ENGLISH, "%,.2f", net)}", pageWidth - margin, yPosition, paint)
+        canvas.drawText("الصافي النهائي: ${String.format(Locale.ENGLISH, "%,.2f", net)} ج.م", pageWidth - margin, yPosition, paint)
 
         // Footer
         canvas.drawText("صفحة ${pdfDocument.pages.size + 1} | تقرير دورة مفصل | ${SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())}", pageWidth / 2f, pageInfo.pageHeight - 20f, footerPaint)

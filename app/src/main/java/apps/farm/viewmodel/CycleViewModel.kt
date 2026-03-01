@@ -93,7 +93,10 @@ class CycleViewModel @Inject constructor(
                     weight = inv.netWeight,
                     price = inv.price,
                     debit = inv.netWeight * inv.price,
-                    credit = 0.0
+                    credit = 0.0,
+                    invoiceDate = inv.invoiceDate,
+                    invoiceReceive = inv.receiveAmount,
+                    invoiceRemaining = inv.totalInvoice - inv.receiveAmount
                 ))
                 // Row 2: Addition (if any) - debit = addition
                 if (inv.addition > 0) {
