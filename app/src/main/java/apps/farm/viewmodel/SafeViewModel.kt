@@ -91,6 +91,28 @@ class SafeViewModel @Inject constructor(
             }
         }
     }
+
+    fun deleteSafe(safe: Safe, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                safeRepository.deleteSafe(safe)
+                onResult(true, getApplication<Application>().getString(R.string.success_delete_safe))
+            } catch (e: Exception) {
+                onResult(false, getApplication<Application>().getString(R.string.error_delete_safe, e.message))
+            }
+        }
+    }
+
+    fun deleteAllSafes(onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                safeRepository.deleteAllSafes()
+                onResult(true, getApplication<Application>().getString(R.string.success_delete_all_safes))
+            } catch (e: Exception) {
+                onResult(false, getApplication<Application>().getString(R.string.error_delete_safe, e.message))
+            }
+        }
+    }
     
     suspend fun getSafeById(id: String): Safe? {
         return safeRepository.getSafeById(id)

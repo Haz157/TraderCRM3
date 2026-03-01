@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,28 +34,107 @@ fun SafesScreen(
     onNavigateToSafeDetail: (String?) -> Unit
 ) {
     val safes by safeViewModel.allSafes.collectAsState(initial = emptyList())
+    val context = androidx.compose.ui.platform.LocalContext.current
 
-    if (safes.isEmpty()) {
-        EmptyStateMessage(
-            icon = Icons.Default.AccountBalance,
-            message = stringResource(R.string.message_no_safes)
+    var safeToDelete by remember { mutableStateOf<Safe?>(null) }
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
+
+    if (safeToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { safeToDelete = null },
+            title = { Text(stringResource(R.string.dialog_delete_safe_title)) },
+            text = { Text(stringResource(R.string.dialog_delete_safe_message, safeToDelete?.name ?: "")) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        safeToDelete?.let { safe ->
+                            safeViewModel.deleteSafe(safe) { success, message ->
+                                // Optional message handling
+                            }
+                        }
+                        safeToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.button_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { safeToDelete = null }) {
+                    Text(stringResource(R.string.button_cancel))
+                }
+            }
         )
-    } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(
-                items = safes,
-                key = { it.id }
-            ) { safe ->
-                SafeCard(
-                    safe = safe,
-                    onClick = { onNavigateToSafeView(safe.id) },
-                    onEdit = { onNavigateToSafeDetail(safe.id) },
-                    onToggleBlock = { safeViewModel.toggleBlockStatus(safe.id, safe.blocked) }
-                )
+    }
+
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = { Text(stringResource(R.string.dialog_delete_all_safes_title)) },
+            text = { Text(stringResource(R.string.dialog_delete_all_safes_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        safeViewModel.deleteAllSafes { success, message ->
+                            // Optional message handling
+                        }
+                        showDeleteAllDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.button_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
+                    Text(stringResource(R.string.button_cancel))
+                }
+            }
+        )
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (safes.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(
+                    onClick = { showDeleteAllDialog = true },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.action_delete_all))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(Icons.Default.DeleteSweep, contentDescription = null)
+                }
+            }
+        }
+
+        if (safes.isEmpty()) {
+            EmptyStateMessage(
+                icon = Icons.Default.AccountBalance,
+                message = stringResource(R.string.message_no_safes)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(
+                    items = safes,
+                    key = { it.id }
+                ) { safe ->
+                    SafeCard(
+                        safe = safe,
+                        onClick = { onNavigateToSafeView(safe.id) },
+                        onEdit = { onNavigateToSafeDetail(safe.id) },
+                        onToggleBlock = { safeViewModel.toggleBlockStatus(safe.id, safe.blocked) },
+                        onDelete = { safeToDelete = safe }
+                    )
+                }
             }
         }
     }
@@ -65,7 +146,8 @@ fun SafeCard(
     safe: Safe,
     onClick: () -> Unit,
     onEdit: () -> Unit,
-    onToggleBlock: () -> Unit
+    onToggleBlock: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val animatedScale by animateFloatAsState(
         targetValue = 1f,
@@ -141,6 +223,9 @@ fun SafeCard(
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
                         Icon(Icons.Default.Edit, contentDescription = "تعديل", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+                    }
+                    IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Default.Delete, contentDescription = "حذف", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.error)
                     }
                     FilledIconToggleButton(
                         checked = !safe.blocked,

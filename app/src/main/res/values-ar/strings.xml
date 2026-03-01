@@ -159,6 +159,14 @@
     <string name="success_update_farm">تم تعديل بيانات المزرعة بنجاح</string>
     <string name="error_add_farm">خطأ في إضافة المزرعة: %1$s</string>
     <string name="error_update_farm">خطأ في تعديل المزرعة: %1$s</string>
+    <string name="success_delete_safe">تم حذف الخزنة بنجاح</string>
+    <string name="error_delete_safe">خطأ في حذف الخزنة: %1$s</string>
+    <string name="success_delete_all_safes">تم حذف جميع الخزنات بنجاح</string>
+    <string name="dialog_delete_safe_title">حذف الخزنة</string>
+    <string name="dialog_delete_safe_message">هل أنت متأكد من رغبتك في حذف الخزنة \"%1$s\"؟ لا يمكن تراجع عن هذه العملية.</string>
+    <string name="dialog_delete_all_safes_title">حذف جميع الخزنات</string>
+    <string name="dialog_delete_all_safes_message">هل أنت متأكد تماماً من رغبتك في حذف جميع الخزنات؟ سيؤدي هذا لمسح كافة بيانات الخزن نهائياً.</string>
+    <string name="action_delete_all">مسح الكل</string>
 
     <!-- ReceiveViewModel -->
     <string name="error_select_customer_receive">يرجى اختيار عميل</string>
@@ -213,10 +221,10 @@
     <string name="error_no_category_selected">يرجى اختيار قسم واحد على الأقل</string>
     <string name="notification_backup_title">تنبيه النسخ الاحتياطي</string>
     <string name="notification_backup_body">يرجى رفع ملف النسخة الاحتياطية على Google Drive لتتمكن من استعادة بياناتك لاحقاً.</string>
-    <string name="button_restore_db">استعادة قاعدة البيانات</string>
+    <string name="button_restore_db">استعادة من جوجل درايف / ملفات الجهاز</string>
     <string name="message_restore_success">تم استعادة قاعدة البيانات بنجاح. سيتم إعادة تشغيل التطبيق الآن.</string>
     <string name="message_restore_error">خطأ في استعادة قاعدة البيانات: %s</string>
     <string name="dialog_title_confirm_restore">تأكيد الاستعادة</string>
-    <string name="dialog_message_confirm_restore">هل أنت متأكد من رغبتك في استعادة قاعدة البيانات؟ سيتم استبدال البيانات الحالية وإعادة تشغيل التطبيق.</string>
+    <string name="dialog_message_confirm_restore">هل أنت متأكد من رغبتك في استعادة قاعدة البيانات؟ يرجى اختيار ملف النسخة الاحتياطية الذي قمت برفعه على Google Drive. سيتم استبدال البيانات الحالية وإعادة تشغيل التطبيق.</string>
     <string name="dialog_button_cancel">إلغاء</string>
 </resources>

@@ -142,6 +142,14 @@
     <string name="success_update_safe">Safe updated successfully</string>
     <string name="error_update_safe">Error updating safe: %1$s</string>
     <string name="error_update_safe_status">Error updating safe status: %1$s</string>
+    <string name="success_delete_safe">Safe deleted successfully</string>
+    <string name="error_delete_safe">Error deleting safe: %1$s</string>
+    <string name="success_delete_all_safes">All safes deleted successfully</string>
+    <string name="dialog_delete_safe_title">Delete Safe</string>
+    <string name="dialog_delete_safe_message">Are you sure you want to delete the safe \"%1$s\"? This action cannot be undone.</string>
+    <string name="dialog_delete_all_safes_title">Delete All Safes</string>
+    <string name="dialog_delete_all_safes_message">Are you sure you want to delete all safes? All safe data will be permanently cleared.</string>
+    <string name="action_delete_all">Delete All</string>
 
     <!-- ReceiveViewModel -->
     <string name="error_select_customer_receive">Please select a customer</string>

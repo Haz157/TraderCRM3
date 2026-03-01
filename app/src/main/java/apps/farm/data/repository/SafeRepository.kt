@@ -39,4 +39,17 @@ class SafeRepository(
     suspend fun isSafeNameUnique(name: String, excludeId: String = ""): Boolean {
         return getSafeByName(name, excludeId) == null
     }
+
+    suspend fun getAllSafesSync(): List<Safe> = safeDao.getAllSafesSync()
+    suspend fun insertSafes(safes: List<Safe>) = safeDao.insertSafes(safes)
+
+    suspend fun deleteSafe(safe: Safe) {
+        safeDao.deleteSafe(safe)
+        backupManager.scheduleBackup()
+    }
+
+    suspend fun deleteAllSafes() {
+        safeDao.deleteAllSafes()
+        backupManager.scheduleBackup()
+    }
 }

@@ -22,6 +22,9 @@ class ReceiveRepository(
     suspend fun getTotalReceiveByCustomer(customerId: String): Double? = 
         receiveDao.getTotalReceiveByCustomer(customerId)
     
+    suspend fun getReceivesByDateRange(startDate: Long, endDate: Long): List<Receive> =
+        receiveDao.getReceivesByDateRange(startDate, endDate)
+    
     suspend fun insertReceive(receive: Receive) {
         receiveDao.insertReceive(receive)
         backupManager.scheduleBackup()
@@ -48,4 +51,7 @@ class ReceiveRepository(
     }
 
     suspend fun getMaxReceiveNo(): Int = receiveDao.getMaxReceiveNo() ?: 0
+
+    suspend fun getAllReceivesSync(): List<Receive> = receiveDao.getAllReceivesSync()
+    suspend fun insertReceives(receives: List<Receive>) = receiveDao.insertReceives(receives)
 }

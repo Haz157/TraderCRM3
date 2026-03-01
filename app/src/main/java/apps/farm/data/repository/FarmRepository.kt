@@ -30,4 +30,7 @@ class FarmRepository(
         farmDao.updateFarmStatus(farmId, blocked)
         backupManager.scheduleBackup()
     }
+
+    suspend fun getAllFarmsSync(): List<Farm> = farmDao.getAllFarmsSync()
+    suspend fun insertFarms(farms: List<Farm>) = farmDao.insertFarms(farms)
 }

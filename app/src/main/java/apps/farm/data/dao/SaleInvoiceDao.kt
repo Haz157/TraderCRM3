@@ -14,6 +14,9 @@ interface SaleInvoiceDao {
     @Query("SELECT * FROM saleinvoicetbl ORDER BY createdDate DESC")
     fun getAllInvoices(): Flow<List<SaleInvoice>>
 
+    @Query("SELECT * FROM saleinvoicetbl ORDER BY createdDate DESC")
+    suspend fun getAllInvoicesSync(): List<SaleInvoice>
+
     @Query("SELECT * FROM saleinvoicetbl WHERE id = :id")
     suspend fun getInvoiceById(id: String): SaleInvoice?
 
@@ -92,4 +95,93 @@ interface SaleInvoiceDao {
 
     @Query("DELETE FROM grossweighttbl WHERE invoiceId = :invoiceId")
     suspend fun deleteGrossWeightsByInvoice(invoiceId: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertInvoices(invoices: List<SaleInvoice>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEmptyWeights(weights: List<EmptyWeight>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGrossWeights(weights: List<GrossWeight>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun restoreFarms(farms: List<apps.farm.data.model.Farm>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun restoreCycles(cycles: List<apps.farm.data.model.Cycle>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun restoreCustomers(customers: List<apps.farm.data.model.Customer>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun restoreSafes(safes: List<apps.farm.data.model.Safe>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun restoreReceives(receives: List<apps.farm.data.model.Receive>)
+
+    @Query("SELECT * FROM emptyweighttbl")
+    suspend fun getAllEmptyWeights(): List<EmptyWeight>
+
+    @Query("SELECT * FROM grossweighttbl")
+    suspend fun getAllGrossWeights(): List<GrossWeight>
+
+    @Transaction
+    suspend fun fullDataRestore(
+        farms: List<apps.farm.data.model.Farm>,
+        cycles: List<apps.farm.data.model.Cycle>,
+        customers: List<apps.farm.data.model.Customer>,
+        safes: List<apps.farm.data.model.Safe>,
+        invoices: List<SaleInvoice>,
+        receives: List<apps.farm.data.model.Receive>,
+        emptyWeights: List<EmptyWeight>,
+        grossWeights: List<GrossWeight>
+    ) {
+        clearAllTables()
+        
+        restoreFarms(farms)
+        restoreCycles(cycles)
+        restoreCustomers(customers)
+        restoreSafes(safes)
+        insertInvoices(invoices)
+        restoreReceives(receives)
+        insertEmptyWeights(emptyWeights)
+        insertGrossWeights(grossWeights)
+    }
+
+    @Transaction
+    suspend fun clearAllTables() {
+        deleteAllInvoices()
+        deleteAllEmptyWeights()
+        deleteAllGrossWeights()
+        deleteAllReceives()
+        deleteAllCycles()
+        deleteAllFarms()
+        deleteAllCustomers()
+        deleteAllSafes()
+    }
+
+    @Query("DELETE FROM saleinvoicetbl")
+    suspend fun deleteAllInvoices()
+
+    @Query("DELETE FROM emptyweighttbl")
+    suspend fun deleteAllEmptyWeights()
+
+    @Query("DELETE FROM grossweighttbl")
+    suspend fun deleteAllGrossWeights()
+
+    @Query("DELETE FROM receivetbl")
+    suspend fun deleteAllReceives()
+
+    @Query("DELETE FROM Cycletbl")
+    suspend fun deleteAllCycles()
+
+    @Query("DELETE FROM Farmtbl")
+    suspend fun deleteAllFarms()
+
+    @Query("DELETE FROM Customertbl")
+    suspend fun deleteAllCustomers()
+
+    @Query("DELETE FROM safetbl")
+    suspend fun deleteAllSafes()
 }

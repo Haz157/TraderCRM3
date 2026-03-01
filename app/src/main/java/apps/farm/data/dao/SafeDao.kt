@@ -24,10 +24,22 @@ interface SafeDao {
     @Update
     suspend fun updateSafe(safe: Safe)
 
+    @Delete
+    suspend fun deleteSafe(safe: Safe)
+
+    @Query("DELETE FROM safetbl")
+    suspend fun deleteAllSafes()
+
 
     @Query("UPDATE safetbl SET blocked = 1 WHERE id = :id")
     suspend fun blockSafe(id: String)
 
     @Query("UPDATE safetbl SET blocked = 0 WHERE id = :id")
     suspend fun unblockSafe(id: String)
+
+    @Query("SELECT * FROM safetbl")
+    suspend fun getAllSafesSync(): List<Safe>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSafes(safes: List<Safe>)
 }

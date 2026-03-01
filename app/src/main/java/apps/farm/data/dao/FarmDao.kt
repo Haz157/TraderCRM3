@@ -27,4 +27,9 @@ interface FarmDao {
 
     @Query("UPDATE Farmtbl SET blocked = :blocked WHERE id = :farmId")
     suspend fun updateFarmStatus(farmId: String, blocked: Boolean)
+    @Query("SELECT * FROM Farmtbl")
+    suspend fun getAllFarmsSync(): List<Farm>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFarms(farms: List<Farm>)
 }

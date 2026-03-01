@@ -39,4 +39,7 @@ class CustomerRepository(
     suspend fun getCustomerBalanceBeforeDate(customerId: String, date: Long): Double {
         return customerDao.getCustomerBalanceBeforeDate(customerId, date)
     }
+
+    suspend fun getAllCustomersSync(): List<Customer> = customerDao.getAllCustomersSync()
+    suspend fun insertCustomers(customers: List<Customer>) = customerDao.insertCustomers(customers)
 }

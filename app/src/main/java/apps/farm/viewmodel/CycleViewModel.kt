@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 import apps.farm.data.model.CustomerWithBalance
+import apps.farm.data.repository.ReceiveRepository
 
 
 @HiltViewModel
@@ -26,6 +27,7 @@ class CycleViewModel @Inject constructor(
     private val farmRepository: FarmRepository,
     private val customerRepository: CustomerRepository,
     private val saleInvoiceRepository: SaleInvoiceRepository,
+    private val receiveRepository: ReceiveRepository,
     application: Application
 ) : AndroidViewModel(application) {
 
@@ -76,45 +78,74 @@ class CycleViewModel @Inject constructor(
             val cycle = repository.getCycleById(cycleId) ?: return@launch
             val farm = farmRepository.getFarmById(cycle.farmId) ?: return@launch
             val invoices = saleInvoiceRepository.getInvoicesByCycleSync(cycleId)
+            val receives = receiveRepository.getReceivesByDateRange(cycle.sd, cycle.ed)
             val allCustomers = customerRepository.allCustomers.first().associateBy { it.customer.id }
 
             val items = mutableListOf<CycleReportPdfGenerator.CycleReportItem>()
+            
+            // Add Invoices (Debit) and their Additions/Discounts
             for (inv in invoices) {
                 val customerName = allCustomers[inv.customerId]?.customer?.name ?: "تاجر غير معروف"
-                // Row 1: Base invoice - credit = weight * price
+                // Row 1: Base invoice - debit = weight * price
                 items.add(CycleReportPdfGenerator.CycleReportItem(
                     type = "فاتورة بيع رقم ${inv.invoiceNo}",
                     merchantName = customerName,
                     weight = inv.netWeight,
                     price = inv.price,
-                    credit = inv.netWeight * inv.price,
-                    debit = 0.0
+                    debit = inv.netWeight * inv.price,
+                    credit = 0.0
                 ))
-                // Row 2: Addition (if any) - credit = addition
+                // Row 2: Addition (if any) - debit = addition
                 if (inv.addition > 0) {
                     items.add(CycleReportPdfGenerator.CycleReportItem(
                         type = "تكلفة إضافية فاتورة ${inv.invoiceNo}",
                         merchantName = customerName,
                         weight = 0.0,
                         price = 0.0,
-                        credit = inv.addition,
-                        debit = 0.0
+                        debit = inv.addition,
+                        credit = 0.0
                     ))
                 }
-                // Row 3: Discount (if any) - debit = discount
+                // Row 3: Discount (if any) - credit = discount
                 if (inv.discount > 0) {
                     items.add(CycleReportPdfGenerator.CycleReportItem(
                         type = "خصم فاتورة ${inv.invoiceNo}",
                         merchantName = customerName,
                         weight = 0.0,
                         price = 0.0,
-                        credit = 0.0,
-                        debit = inv.discount
+                        debit = 0.0,
+                        credit = inv.discount
+                    ))
+                }
+            }
+
+            // Add Receives (Credit)
+            for (receive in receives) {
+                val customerName = allCustomers[receive.customerId]?.customer?.name ?: "تاجر غير معروف"
+                // Receive entry
+                items.add(CycleReportPdfGenerator.CycleReportItem(
+                    type = "تحصيل رقم ${receive.receiveNo}",
+                    merchantName = customerName,
+                    weight = 0.0,
+                    price = 0.0,
+                    debit = 0.0,
+                    credit = receive.receive
+                ))
+                // Discount entry inside Receive (if any)
+                if (receive.discount > 0) {
+                    items.add(CycleReportPdfGenerator.CycleReportItem(
+                        type = "خصم تحصيل رقم ${receive.receiveNo}",
+                        merchantName = customerName,
+                        weight = 0.0,
+                        price = 0.0,
+                        debit = 0.0,
+                        credit = receive.discount
                     ))
                 }
             }
 
             val generator = CycleReportPdfGenerator(context)
+            // Final calculation logic in generator: net = totalDebit - totalCredit
             val file = generator.generatePdf(farm, cycle, items)
             onPdfGenerated(file)
         }

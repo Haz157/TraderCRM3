@@ -43,4 +43,6 @@ class CycleRepository(
     suspend fun getAllCyclesSync(): List<Cycle> {
         return cycleDao.getAllCyclesSync()
     }
+
+    suspend fun insertCycles(cycles: List<Cycle>) = cycleDao.insertCycles(cycles)
 }

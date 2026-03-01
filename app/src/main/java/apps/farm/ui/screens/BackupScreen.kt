@@ -131,6 +131,11 @@ fun BackupScreen(
                         onFullBackup = {
                             DatabaseBackupUtils.backupDatabase(context)
                         },
+                        onFullJsonBackup = {
+                            viewModel.performFullJsonBackup(context) { error ->
+                                showMessage = error
+                            }
+                        },
                         onSelectiveExport = { content ->
                             DatabaseBackupUtils.shareSelectiveExport(context, content)
                         },
@@ -167,17 +172,44 @@ fun BackupScreen(
             val restoreLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
                 androidx.activity.result.contract.ActivityResultContracts.GetContent()
             ) { uri ->
-                uri?.let {
-                    DatabaseBackupUtils.restoreDatabase(
-                        context = context,
-                        backupUri = it,
-                        onSuccess = {
-                            DatabaseBackupUtils.restartApp(context)
-                        },
-                        onError = { error ->
-                            showMessage = context.getString(R.string.message_restore_error, error)
-                        }
-                    )
+                uri?.let { selectedUri ->
+                    val fileName = getFileNameFromUri(context, selectedUri)
+                    if (fileName.endsWith(".dmp") || fileName.toLowerCase().contains("json") || fileName.contains(".dmp")) {
+                         viewModel.performJsonRestore(
+                             context = context,
+                             uri = selectedUri,
+                             onSuccess = {
+                                 DatabaseBackupUtils.restartApp(context)
+                             },
+                             onError = { error ->
+                                 showMessage = context.getString(R.string.message_restore_error, error)
+                             }
+                         )
+                    } else if (fileName.endsWith(".db")) {
+                        // Binary restore
+                        DatabaseBackupUtils.restoreDatabase(
+                            context = context,
+                            backupUri = selectedUri,
+                            onSuccess = {
+                                DatabaseBackupUtils.restartApp(context)
+                            },
+                            onError = { error ->
+                                showMessage = context.getString(R.string.message_restore_error, error)
+                            }
+                        )
+                    } else {
+                        // Try JSON as last resort if extension unknown
+                        viewModel.performJsonRestore(
+                            context = context,
+                            uri = selectedUri,
+                            onSuccess = {
+                                DatabaseBackupUtils.restartApp(context)
+                            },
+                            onError = { 
+                                 showMessage = context.getString(R.string.message_restore_error, "ملف غير معروف")
+                            }
+                        )
+                    }
                 }
             }
 
@@ -205,7 +237,7 @@ fun BackupScreen(
                         TextButton(
                             onClick = {
                                 showRestoreConfirmDialog = false
-                                restoreLauncher.launch("*/*") // Filter for all files, user picks the .db
+                                restoreLauncher.launch("*/*") // Picks any file, the utility handles it
                             },
                             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                         ) {
@@ -274,4 +306,29 @@ fun BackupCategoryItem(
             )
         }
     }
+}
+
+private fun getFileNameFromUri(context: android.content.Context, uri: android.net.Uri): String {
+    var result: String? = null
+    if (uri.scheme == "content") {
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        try {
+            if (cursor != null && cursor.moveToFirst()) {
+                val index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (index != -1) {
+                    result = cursor.getString(index)
+                }
+            }
+        } finally {
+            cursor?.close()
+        }
+    }
+    if (result == null) {
+        result = uri.path
+        val cut = result?.lastIndexOf('/') ?: -1
+        if (cut != -1) {
+            result = result?.substring(cut + 1)
+        }
+    }
+    return result ?: "unknown"
 }

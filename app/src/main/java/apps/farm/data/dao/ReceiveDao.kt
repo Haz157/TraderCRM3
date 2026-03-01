@@ -21,6 +21,9 @@ interface ReceiveDao {
     @Query("SELECT * FROM receivetbl WHERE customerId = :customerId AND createdDate >= :startDate AND createdDate <= :endDate AND isBlocked = 0 ORDER BY createdDate ASC")
     suspend fun getReceivesByCustomerAndDateRange(customerId: String, startDate: Long, endDate: Long): List<Receive>
 
+    @Query("SELECT * FROM receivetbl WHERE createdDate >= :startDate AND createdDate <= :endDate AND isBlocked = 0 ORDER BY createdDate ASC")
+    suspend fun getReceivesByDateRange(startDate: Long, endDate: Long): List<Receive>
+
     @Query("SELECT SUM(receive - discount) FROM receivetbl WHERE customerId = :customerId AND isBlocked = 0")
     suspend fun getTotalReceiveByCustomer(customerId: String): Double?
 
@@ -42,4 +45,10 @@ interface ReceiveDao {
 
     @Query("SELECT MAX(receiveNo) FROM receivetbl")
     suspend fun getMaxReceiveNo(): Int?
+
+    @Query("SELECT * FROM receivetbl")
+    suspend fun getAllReceivesSync(): List<Receive>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertReceives(receives: List<Receive>)
 }

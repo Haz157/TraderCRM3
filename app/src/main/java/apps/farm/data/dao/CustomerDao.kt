@@ -59,4 +59,9 @@ interface CustomerDao {
             IFNULL((SELECT SUM(receive + discount) FROM receivetbl WHERE customerId = :customerId AND createdDate < :date AND isBlocked = 0), 0)
     """)
     suspend fun getCustomerBalanceBeforeDate(customerId: String, date: Long): Double
+    @Query("SELECT * FROM Customertbl")
+    suspend fun getAllCustomersSync(): List<Customer>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCustomers(customers: List<Customer>)
 }

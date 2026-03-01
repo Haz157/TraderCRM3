@@ -33,4 +33,6 @@ interface CycleDao {
 
     @Query("SELECT * FROM Cycletbl")
     suspend fun getAllCyclesSync(): List<Cycle>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCycles(cycles: List<Cycle>)
 }

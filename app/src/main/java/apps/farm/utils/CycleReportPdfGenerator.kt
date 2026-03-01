@@ -84,8 +84,8 @@ class CycleReportPdfGenerator(private val context: Context) {
         yPosition += 30f
 
         // Table Setup
-        val headers = arrayOf("نوع العملية", "اسم التاجر", "الوزن", "السعر", "الدائن", "المدين")
-        val colWidths = floatArrayOf(85f, 130f, 60f, 60f, 90f, 90f) // Total 515
+        val headers = arrayOf("البيان / التاجر", "الوزن", "السعر", "المدين", "الدائن")
+        val colWidths = floatArrayOf(215f, 60f, 60f, 90f, 90f) // Total 515
         
         // Draw Header Background
         val headerHeight = 25f
@@ -156,12 +156,11 @@ class CycleReportPdfGenerator(private val context: Context) {
             }
 
             drawRow(arrayOf(
-                item.type,
-                item.merchantName,
+                "${item.type} - ${item.merchantName}",
                 formatNum(item.weight),
                 formatNum(item.price),
-                formatNum(item.credit),
-                formatNum(item.debit)
+                formatNum(item.debit),
+                formatNum(item.credit)
             ), index % 2 == 1, yPosition)
             
             totalCredit += item.credit
@@ -172,13 +171,13 @@ class CycleReportPdfGenerator(private val context: Context) {
         // Summary Highlight
         yPosition += 10f
         drawRow(arrayOf(
-            "الإجمالي", "", "", "",
-            String.format(Locale.ENGLISH, "%,.2f", totalCredit),
-            String.format(Locale.ENGLISH, "%,.2f", totalDebit)
+            "الإجمالي", "", "",
+            String.format(Locale.ENGLISH, "%,.2f", totalDebit),
+            String.format(Locale.ENGLISH, "%,.2f", totalCredit)
         ), false, yPosition, isSummary = true)
         
         yPosition += 40f
-        val net = totalCredit - totalDebit
+        val net = totalDebit - totalCredit
         paint.textSize = 14f
         paint.isFakeBoldText = true
         paint.textAlign = Paint.Align.RIGHT
