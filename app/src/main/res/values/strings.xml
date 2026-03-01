@@ -19,7 +19,7 @@
     <string name="message_no_safes">No safes available</string>
     <string name="error_safe_name_required">Safe name is required</string>
     <string name="error_safe_name_exists">Safe name already exists</string>
-
+    <string name="label_average_crate_weight">Average Crate Weight</string>
     <!-- Invoice -->
     <string name="title_add_invoice">Add Invoice</string>
     <string name="title_edit_invoice">Edit Invoice</string>

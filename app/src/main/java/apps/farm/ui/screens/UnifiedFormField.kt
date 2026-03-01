@@ -34,7 +34,8 @@ fun UnifiedFormField(
     maxDecimals: Int = 3,
     imeAction: ImeAction = ImeAction.Default,
     onImeAction: () -> Unit = {},
-    isPhone: Boolean = false
+    isPhone: Boolean = false,
+    readOnly: Boolean = false
 ) {
     var hasError by remember { mutableStateOf(false) }
     
@@ -102,15 +103,18 @@ fun UnifiedFormField(
             OutlinedTextField(
                 value = filteredValue,
                 onValueChange = { 
-                    if (isDecimal) {
-                        // Only allow valid decimal input
-                        if (it.isEmpty() || it.matches(Regex("^-?\\d*\\.?(\\d{0,$maxDecimals})?$"))) {
+                    if (!readOnly) {
+                        if (isDecimal) {
+                            // Only allow valid decimal input
+                            if (it.isEmpty() || it.matches(Regex("^-?\\d*\\.?(\\d{0,$maxDecimals})?$"))) {
+                                onValueChange(it)
+                            }
+                        } else {
                             onValueChange(it)
                         }
-                    } else {
-                        onValueChange(it)
                     }
                 },
+                readOnly = readOnly,
                 placeholder = { Text(placeholder, color = TextDisabled) },
                 modifier = Modifier
                     .fillMaxWidth()
