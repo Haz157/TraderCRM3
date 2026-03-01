@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -29,10 +30,25 @@ fun WeightDialog(
 ) {
     var weight by remember { mutableStateOf("") }
     var count by remember { mutableStateOf("") }
-    
+    var averageWeight by remember { mutableStateOf("") }
+
+    // Sync weight when averageWeight or count changes
+    LaunchedEffect(averageWeight, count) {
+        val avg = averageWeight.toDoubleOrNull() ?: 0.0
+        val cnt = count.toIntOrNull() ?: 0
+        if (avg > 0 && cnt > 0) {
+            val calculatedWeight = avg * cnt
+            val currentWeight = weight.toDoubleOrNull() ?: 0.0
+            // Only update if the difference is significant to avoid infinite loops or jitter
+            if (Math.abs(calculatedWeight - currentWeight) > 0.001) {
+                weight = String.format(Locale.US, "%.3f", calculatedWeight)
+            }
+        }
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(24.dp), // More rounded as in image
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
@@ -43,50 +59,91 @@ fun WeightDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
                     ),
-                    color = TextPrimary
-                )
-                
-                
-                UnifiedFormField(
-                    value = count,
-                    onValueChange = { count = it.filter { char -> char.isDigit() } },
-                    label = stringResource(R.string.label_crate_count),
-                    icon = Icons.Default.Inventory,
-                    placeholder = "0",
-                    isPhone = true
+                    color = TextPrimary,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
 
+                // 1. Average Crate Weight
                 UnifiedFormField(
-                    value = weight,
-                    onValueChange = { weight = it },
-                    label = stringResource(R.string.label_total_crate_weight),
+                    value = averageWeight,
+                    onValueChange = { 
+                        averageWeight = it
+                    },
+                    label = stringResource(R.string.label_average_crate_weight),
                     icon = Icons.Default.Scale,
                     placeholder = "0.0",
                     isDecimal = true,
                     maxDecimals = 3
                 )
+
+                // 2. Crate Count
+                UnifiedFormField(
+                    value = count,
+                    onValueChange = { 
+                        count = it.filter { char -> char.isDigit() }
+                    },
+                    label = stringResource(R.string.label_crate_count),
+                    icon = Icons.Default.Inventory2,
+                    placeholder = "0",
+                    isPhone = true
+                )
+
+                // 3. Total Weight (Calculated/Manual)
+                UnifiedFormField(
+                    value = weight,
+                    onValueChange = { 
+                        weight = it
+                        // Update average if total weight is changed manually
+                        val w = it.toDoubleOrNull() ?: 0.0
+                        val c = count.toIntOrNull() ?: 0
+                        if (c > 0) {
+                            val calculatedAvg = w / c
+                            val currentAvg = averageWeight.toDoubleOrNull() ?: 0.0
+                            if (Math.abs(calculatedAvg - currentAvg) > 0.001) {
+                                averageWeight = String.format(Locale.US, "%.3f", calculatedAvg)
+                            }
+                        }
+                    },
+                    label = stringResource(R.string.label_weight_kg),
+                    icon = Icons.Default.Calculate,
+                    placeholder = "0.0",
+                    isDecimal = true,
+                    maxDecimals = 3
+                )
                 
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 1.dp,
+                            brush = androidx.compose.ui.graphics.SolidColor(TextSecondary.copy(alpha = 0.5f))
+                        )
                     ) {
-                        Text(stringResource(R.string.button_cancel))
+                        Text(
+                            stringResource(R.string.button_cancel),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextSecondary
+                        )
                     }
                     
-                    FilledTonalButton(
+                    Button(
                         onClick = {
                             val weightValue = weight.toDoubleOrNull() ?: 0.0
                             val countValue = count.toIntOrNull() ?: 0
@@ -95,14 +152,19 @@ fun WeightDialog(
                                 onDismiss()
                             }
                         },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PrimaryLight,
+                            contentColor = Color.White
                         )
                     ) {
-                        Text(stringResource(R.string.button_add))
+                        Text(
+                            stringResource(R.string.button_add),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
             }
