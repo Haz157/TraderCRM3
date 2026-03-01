@@ -502,7 +502,7 @@ fun SaleInvoiceDetailScreen(
     }
 
     if (showEmptyWeightDialog) {
-        WeightDialog(
+        EmptyWeightDialog(
             title = stringResource(R.string.label_empty_weight),
             onDismiss = { showEmptyWeightDialog = false },
             onAdd = { weight, count -> invoiceViewModel.addEmptyWeight(weight, count) }
@@ -510,7 +510,7 @@ fun SaleInvoiceDetailScreen(
     }
 
     if (showGrossWeightDialog) {
-        WeightDialog(
+        GrossWeightDialog(
             title = stringResource(R.string.label_gross_weight),
             onDismiss = { showGrossWeightDialog = false },
             onAdd = { weight, count -> invoiceViewModel.addGrossWeight(weight, count) }

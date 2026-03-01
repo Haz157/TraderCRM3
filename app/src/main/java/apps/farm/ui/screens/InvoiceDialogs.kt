@@ -21,9 +21,10 @@ import androidx.compose.ui.res.stringResource
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.abs
 
 @Composable
-fun WeightDialog(
+fun EmptyWeightDialog(
     title: String,
     onDismiss: () -> Unit,
     onAdd: (weight: Double, count: Int) -> Unit
@@ -40,7 +41,7 @@ fun WeightDialog(
             val calculatedWeight = avg * cnt
             val currentWeight = weight.toDoubleOrNull() ?: 0.0
             // Only update if the difference is significant to avoid infinite loops or jitter
-            if (Math.abs(calculatedWeight - currentWeight) > 0.001) {
+            if (abs(calculatedWeight - currentWeight) > 0.001) {
                 weight = String.format(Locale.US, "%.3f", calculatedWeight)
             }
         }
@@ -112,6 +113,112 @@ fun WeightDialog(
                             }
                         }
                     },
+                    label = stringResource(R.string.label_weight_kg),
+                    icon = Icons.Default.Calculate,
+                    placeholder = "0.0",
+                    isDecimal = true,
+                    maxDecimals = 3
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 1.dp,
+                            brush = androidx.compose.ui.graphics.SolidColor(TextSecondary.copy(alpha = 0.5f))
+                        )
+                    ) {
+                        Text(
+                            stringResource(R.string.button_cancel),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextSecondary
+                        )
+                    }
+                    
+                    Button(
+                        onClick = {
+                            val weightValue = weight.toDoubleOrNull() ?: 0.0
+                            val countValue = count.toIntOrNull() ?: 0
+                            if (weightValue > 0 && countValue > 0) {
+                                onAdd(weightValue, countValue)
+                                onDismiss()
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PrimaryLight,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            stringResource(R.string.button_add),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GrossWeightDialog(
+    title: String,
+    onDismiss: () -> Unit,
+    onAdd: (weight: Double, count: Int) -> Unit
+) {
+    var weight by remember { mutableStateOf("") }
+    var count by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = TextPrimary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                UnifiedFormField(
+                    value = count,
+                    onValueChange = { count = it.filter { char -> char.isDigit() } },
+                    label = stringResource(R.string.label_crate_count),
+                    icon = Icons.Default.Inventory2,
+                    placeholder = "0",
+                    isPhone = true
+                )
+
+                UnifiedFormField(
+                    value = weight,
+                    onValueChange = { weight = it },
                     label = stringResource(R.string.label_weight_kg),
                     icon = Icons.Default.Calculate,
                     placeholder = "0.0",
