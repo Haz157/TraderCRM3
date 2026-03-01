@@ -126,6 +126,7 @@
     <!-- الفاتورة -->
     <string name="label_weight_kg">الوزن (كجم)</string>
     <string name="label_average_crate_weight">متوسط وزن القفص</string>
+    <string name="label_total_crate_weight">إجمالي وزن الأقفاص</string>
 
     <!-- ViewModels Arabic Strings -->
 

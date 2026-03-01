@@ -181,41 +181,18 @@ class CycleReportPdfGenerator(private val context: Context) {
             yPosition += 20f
         }
 
-        // Summary Box
-        yPosition += 30f
-        if (yPosition > pageInfo.pageHeight - 100f) {
-            pdfDocument.finishPage(page)
-            page = pdfDocument.startPage(pageInfo)
-            canvas = page.canvas
-            yPosition = 50f
-        }
-
-        val boxWidth = 200f
-        val boxHeight = 80f
-        val boxX = pageWidth - margin - boxWidth
+        // Summary Row - Tabular format
+        yPosition += 10f
+        drawRow(arrayOf(
+            "", "الإجمالي", "", "",
+            formatNum(totalDebit),
+            "", "",
+            formatNum(totalCredit)
+        ), false, yPosition, isSummary = true)
         
-        paint.color = summaryBgColor
-        canvas.drawRoundRect(boxX, yPosition, boxX + boxWidth, yPosition + boxHeight, 10f, 10f, paint)
-        
-        paint.color = themeColor
-        paint.textAlign = Paint.Align.CENTER
-        paint.textSize = 12f
-        paint.isFakeBoldText = true
-        canvas.drawText("ملخص الحساب", boxX + boxWidth / 2, yPosition + 25f, paint)
-        
-        paint.color = Color.BLACK
-        paint.textSize = 10f
-        paint.textAlign = Paint.Align.RIGHT
-        canvas.drawText("إجمالي مدين:", boxX + boxWidth - 15f, yPosition + 45f, paint)
-        canvas.drawText("إجمالي دائن:", boxX + boxWidth - 15f, yPosition + 65f, paint)
-        
-        paint.textAlign = Paint.Align.LEFT
-        canvas.drawText(formatNum(totalDebit), boxX + 15f, yPosition + 45f, paint)
-        canvas.drawText(formatNum(totalCredit), boxX + 15f, yPosition + 65f, paint)
-        
-        yPosition += boxHeight + 30f
+        yPosition += 40f
         val net = totalDebit - totalCredit
-        paint.textSize = 16f
+        paint.textSize = 14f
         paint.isFakeBoldText = true
         paint.textAlign = Paint.Align.RIGHT
         paint.color = themeColor

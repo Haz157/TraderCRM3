@@ -12,7 +12,7 @@
     <string name="content_description_add">Add</string>
     <string name="dialog_delete_safe_warning">
 Warning: This safe is linked to transactions (invoices or collections). Deleting it will permanently remove all associated transactions. Are you sure you want to continue?
-</string>
+    </string>
     <!-- Safe -->
     <string name="title_add_safe">Add Safe</string>
     <string name="title_edit_safe">Edit Safe</string>
@@ -22,6 +22,7 @@ Warning: This safe is linked to transactions (invoices or collections). Deleting
     <string name="error_safe_name_required">Safe name is required</string>
     <string name="error_safe_name_exists">Safe name already exists</string>
     <string name="label_average_crate_weight">Average Crate Weight</string>
+    <string name="label_total_crate_weight">Total Crate Weight</string>
     <!-- Invoice -->
     <string name="title_add_invoice">Add Invoice</string>
     <string name="title_edit_invoice">Edit Invoice</string>

@@ -27,20 +27,8 @@ fun WeightDialog(
     onDismiss: () -> Unit,
     onAdd: (weight: Double, count: Int) -> Unit
 ) {
-    var averageWeight by remember { mutableStateOf("") }
-    var count by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
-    
-    // Calculate total weight automatically
-    LaunchedEffect(averageWeight, count) {
-        val avg = averageWeight.toDoubleOrNull() ?: 0.0
-        val cnt = count.toIntOrNull() ?: 0
-        if (avg > 0 && cnt > 0) {
-            weight = (avg * cnt).toString()
-        } else {
-            weight = ""
-        }
-    }
+    var count by remember { mutableStateOf("") }
     
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -66,15 +54,6 @@ fun WeightDialog(
                     color = TextPrimary
                 )
                 
-                UnifiedFormField(
-                    value = averageWeight,
-                    onValueChange = { averageWeight = it },
-                    label = stringResource(R.string.label_average_crate_weight),
-                    icon = Icons.Default.Scale,
-                    placeholder = "0.0",
-                    isDecimal = true,
-                    maxDecimals = 3
-                )
                 
                 UnifiedFormField(
                     value = count,
@@ -88,12 +67,11 @@ fun WeightDialog(
                 UnifiedFormField(
                     value = weight,
                     onValueChange = { weight = it },
-                    label = stringResource(R.string.label_weight_kg),
-                    icon = Icons.Default.Calculate,
+                    label = stringResource(R.string.label_total_crate_weight),
+                    icon = Icons.Default.Scale,
                     placeholder = "0.0",
                     isDecimal = true,
-                    maxDecimals = 3,
-                    readOnly = true
+                    maxDecimals = 3
                 )
                 
                 Row(
