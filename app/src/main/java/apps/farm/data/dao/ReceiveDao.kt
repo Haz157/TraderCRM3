@@ -49,6 +49,9 @@ interface ReceiveDao {
     @Query("SELECT * FROM receivetbl")
     suspend fun getAllReceivesSync(): List<Receive>
 
+    @Query("DELETE FROM receivetbl WHERE safeId = :safeId")
+    suspend fun deleteReceivesBySafeId(safeId: String)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReceives(receives: List<Receive>)
 }

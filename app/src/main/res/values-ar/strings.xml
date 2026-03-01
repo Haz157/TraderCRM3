@@ -165,9 +165,10 @@
     <string name="success_delete_all_safes">تم حذف جميع الخزنات بنجاح</string>
     <string name="dialog_delete_safe_title">حذف الخزنة</string>
     <string name="dialog_delete_safe_message">هل أنت متأكد من رغبتك في حذف الخزنة \"%1$s\"؟ لا يمكن تراجع عن هذه العملية.</string>
+    <string name="dialog_delete_safe_warning">تنبيه: هذه الخزنة مرتبطة بعمليات (فواتير أو تحصيلات). حذفها سيؤدي لحذف كافة هذه العمليات نهائياً. هل أنت متأكد من الاستمرار؟</string>
     <string name="dialog_delete_all_safes_title">حذف جميع الخزنات</string>
-    <string name="dialog_delete_all_safes_message">هل أنت متأكد تماماً من رغبتك في حذف جميع الخزنات؟ سيؤدي هذا لمسح كافة بيانات الخزن نهائياً.</string>
-    <string name="action_delete_all">مسح الكل</string>
+    <string name="dialog_delete_all_safes_message">هل أنت متأكد تماماً من رغبتك في حذف جميع الخزنات؟ سيؤدي هذا لمسح كافة الخزن وجميع الفواتير والتحصيلات المرتبطة بها نهائياً.</string>
+    <string name="action_delete_all">مسح الكل ومع البيانات</string>
 
     <!-- ReceiveViewModel -->
     <string name="error_select_customer_receive">يرجى اختيار عميل</string>

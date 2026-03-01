@@ -43,8 +43,13 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideSafeRepository(safeDao: SafeDao, backupManager: BackupManager): SafeRepository {
-        return SafeRepository(safeDao, backupManager)
+    fun provideSafeRepository(
+        safeDao: SafeDao,
+        saleInvoiceDao: SaleInvoiceDao,
+        receiveDao: ReceiveDao,
+        backupManager: BackupManager
+    ): SafeRepository {
+        return SafeRepository(safeDao, saleInvoiceDao, receiveDao, backupManager)
     }
 
     @Provides

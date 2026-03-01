@@ -10,7 +10,9 @@
     <string name="tab_invoices">Invoices</string>
     <string name="tab_receives">Receives</string>
     <string name="content_description_add">Add</string>
-
+    <string name="dialog_delete_safe_warning">
+Warning: This safe is linked to transactions (invoices or collections). Deleting it will permanently remove all associated transactions. Are you sure you want to continue?
+</string>
     <!-- Safe -->
     <string name="title_add_safe">Add Safe</string>
     <string name="title_edit_safe">Edit Safe</string>

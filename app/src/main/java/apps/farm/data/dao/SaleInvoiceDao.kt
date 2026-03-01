@@ -161,6 +161,15 @@ interface SaleInvoiceDao {
         deleteAllSafes()
     }
 
+    @Query("DELETE FROM emptyweighttbl WHERE invoiceId IN (SELECT id FROM saleinvoicetbl WHERE safeId = :safeId)")
+    suspend fun deleteEmptyWeightsBySafeId(safeId: String)
+
+    @Query("DELETE FROM grossweighttbl WHERE invoiceId IN (SELECT id FROM saleinvoicetbl WHERE safeId = :safeId)")
+    suspend fun deleteGrossWeightsBySafeId(safeId: String)
+
+    @Query("DELETE FROM saleinvoicetbl WHERE safeId = :safeId")
+    suspend fun deleteInvoicesBySafeId(safeId: String)
+
     @Query("DELETE FROM saleinvoicetbl")
     suspend fun deleteAllInvoices()
 

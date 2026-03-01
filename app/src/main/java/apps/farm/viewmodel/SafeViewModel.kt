@@ -92,10 +92,14 @@ class SafeViewModel @Inject constructor(
         }
     }
 
-    fun deleteSafe(safe: Safe, onResult: (Boolean, String) -> Unit) {
+    fun deleteSafe(safe: Safe, forceDelete: Boolean = false, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
-                safeRepository.deleteSafe(safe)
+                if (forceDelete) {
+                    safeRepository.deleteSafeCompletely(safe)
+                } else {
+                    safeRepository.deleteSafe(safe)
+                }
                 onResult(true, getApplication<Application>().getString(R.string.success_delete_safe))
             } catch (e: Exception) {
                 onResult(false, getApplication<Application>().getString(R.string.error_delete_safe, e.message))

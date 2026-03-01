@@ -26,6 +26,7 @@ import apps.farm.R
 import apps.farm.data.model.Safe
 import apps.farm.ui.theme.*
 import apps.farm.viewmodel.SafeViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun SafesScreen(
@@ -34,7 +35,8 @@ fun SafesScreen(
     onNavigateToSafeDetail: (String?) -> Unit
 ) {
     val safes by safeViewModel.allSafes.collectAsState(initial = emptyList())
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var safeToDelete by remember { mutableStateOf<Safe?>(null) }
     var showDeleteAllDialog by remember { mutableStateOf(false) }
@@ -43,13 +45,15 @@ fun SafesScreen(
         AlertDialog(
             onDismissRequest = { safeToDelete = null },
             title = { Text(stringResource(R.string.dialog_delete_safe_title)) },
-            text = { Text(stringResource(R.string.dialog_delete_safe_message, safeToDelete?.name ?: "")) },
+            text = { Text(stringResource(R.string.dialog_delete_safe_warning)) }, // Using the new warning message
             confirmButton = {
                 TextButton(
                     onClick = {
                         safeToDelete?.let { safe ->
-                            safeViewModel.deleteSafe(safe) { success, message ->
-                                // Optional message handling
+                            safeViewModel.deleteSafe(safe, forceDelete = true) { success, message ->
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(message)
+                                }
                             }
                         }
                         safeToDelete = null
@@ -76,7 +80,9 @@ fun SafesScreen(
                 TextButton(
                     onClick = {
                         safeViewModel.deleteAllSafes { success, message ->
-                            // Optional message handling
+                            scope.launch {
+                                snackbarHostState.showSnackbar(message)
+                            }
                         }
                         showDeleteAllDialog = false
                     },
@@ -93,47 +99,56 @@ fun SafesScreen(
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (safes.isNotEmpty()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    onClick = { showDeleteAllDialog = true },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = Color.Transparent
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (safes.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text(stringResource(R.string.action_delete_all))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(Icons.Default.DeleteSweep, contentDescription = null)
+                    TextButton(
+                        onClick = { showDeleteAllDialog = true },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text(stringResource(R.string.action_delete_all))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(Icons.Default.DeleteSweep, contentDescription = null)
+                    }
                 }
             }
-        }
 
-        if (safes.isEmpty()) {
-            EmptyStateMessage(
-                icon = Icons.Default.AccountBalance,
-                message = stringResource(R.string.message_no_safes)
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(
-                    items = safes,
-                    key = { it.id }
-                ) { safe ->
-                    SafeCard(
-                        safe = safe,
-                        onClick = { onNavigateToSafeView(safe.id) },
-                        onEdit = { onNavigateToSafeDetail(safe.id) },
-                        onToggleBlock = { safeViewModel.toggleBlockStatus(safe.id, safe.blocked) },
-                        onDelete = { safeToDelete = safe }
-                    )
+            if (safes.isEmpty()) {
+                EmptyStateMessage(
+                    icon = Icons.Default.AccountBalance,
+                    message = stringResource(R.string.message_no_safes)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(
+                        items = safes,
+                        key = { it.id }
+                    ) { safe ->
+                        SafeCard(
+                            safe = safe,
+                            onClick = { onNavigateToSafeView(safe.id) },
+                            onEdit = { onNavigateToSafeDetail(safe.id) },
+                            onToggleBlock = { safeViewModel.toggleBlockStatus(safe.id, safe.blocked) },
+                            onDelete = { safeToDelete = safe }
+                        )
+                    }
                 }
             }
         }

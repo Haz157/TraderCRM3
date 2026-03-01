@@ -6,7 +6,9 @@ import apps.farm.utils.BackupManager
 import kotlinx.coroutines.flow.Flow
 
 class SafeRepository(
-    private val safeDao: SafeDao,
+    private val safeDao: apps.farm.data.dao.SafeDao,
+    private val saleInvoiceDao: apps.farm.data.dao.SaleInvoiceDao,
+    private val receiveDao: apps.farm.data.dao.ReceiveDao,
     private val backupManager: BackupManager
 ) {
     val activeSafes: Flow<List<Safe>> = safeDao.getAllActiveSafes()
@@ -48,7 +50,20 @@ class SafeRepository(
         backupManager.scheduleBackup()
     }
 
+    suspend fun deleteSafeCompletely(safe: Safe) {
+        saleInvoiceDao.deleteEmptyWeightsBySafeId(safe.id)
+        saleInvoiceDao.deleteGrossWeightsBySafeId(safe.id)
+        saleInvoiceDao.deleteInvoicesBySafeId(safe.id)
+        receiveDao.deleteReceivesBySafeId(safe.id)
+        safeDao.deleteSafe(safe)
+        backupManager.scheduleBackup()
+    }
+
     suspend fun deleteAllSafes() {
+        saleInvoiceDao.deleteAllEmptyWeights()
+        saleInvoiceDao.deleteAllGrossWeights()
+        saleInvoiceDao.deleteAllInvoices()
+        saleInvoiceDao.deleteAllReceives() // Using SaleInvoiceDao's copy since it exists there
         safeDao.deleteAllSafes()
         backupManager.scheduleBackup()
     }
