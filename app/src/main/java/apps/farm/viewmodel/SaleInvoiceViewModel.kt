@@ -1,6 +1,7 @@
 package apps.farm.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import apps.farm.R
@@ -10,6 +11,8 @@ import apps.farm.data.repository.CycleRepository
 import apps.farm.data.repository.FarmRepository
 import apps.farm.data.repository.SaleInvoiceRepository
 import apps.farm.data.repository.SafeRepository
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -80,9 +83,27 @@ class SaleInvoiceViewModel @Inject constructor(
     
     private val _cyclesByFarm = MutableStateFlow<List<Cycle>>(emptyList())
     val cyclesByFarm: StateFlow<List<Cycle>> = _cyclesByFarm.asStateFlow()
+
+    private val prefs = application.getSharedPreferences("invoice_draft_prefs", Context.MODE_PRIVATE)
+    private val gson = Gson()
+
+    companion object {
+        private const val KEY_FARM_ID = "farm_id"
+        private const val KEY_CYCLE_ID = "cycle_id"
+        private const val KEY_CUSTOMER_ID = "customer_id"
+        private const val KEY_SAFE_ID = "safe_id"
+        private const val KEY_INVOICE_DATE = "invoice_date"
+        private const val KEY_RECEIVE_AMOUNT = "receive_amount"
+        private const val KEY_DISCOUNT_AMOUNT = "discount_amount"
+        private const val KEY_ADDITION_AMOUNT = "addition_amount"
+        private const val KEY_PRICE = "price"
+        private const val KEY_EMPTY_WEIGHTS = "empty_weights"
+        private const val KEY_GROSS_WEIGHTS = "gross_weights"
+    }
     
     init {
         loadInvoices()
+        loadDraft()
     }
     
     private fun loadInvoices() {
@@ -102,6 +123,7 @@ class SaleInvoiceViewModel @Inject constructor(
         _selectedFarm.value = farm
         _selectedCycle.value = null
         loadCyclesByFarm(farm.id)
+        saveDraft()
     }
     
     private fun loadCyclesByFarm(farmId: String) {
@@ -114,18 +136,22 @@ class SaleInvoiceViewModel @Inject constructor(
     
     fun selectCycle(cycle: Cycle) {
         _selectedCycle.value = cycle
+        saveDraft()
     }
     
     fun selectCustomer(customer: Customer) {
         _selectedCustomer.value = customer
+        saveDraft()
     }
     
     fun selectSafe(safe: Safe) {
         _selectedSafe.value = safe
+        saveDraft()
     }
     
     fun setInvoiceDate(date: Long) {
         _invoiceDate.value = date
+        saveDraft()
     }
 
     private var originalInvoice: SaleInvoice? = null
@@ -161,18 +187,22 @@ class SaleInvoiceViewModel @Inject constructor(
     
     fun setReceiveAmount(amount: Double) {
         _receiveAmount.value = amount
+        saveDraft()
     }
     
     fun setDiscountAmount(amount: Double) {
         _discountAmount.value = amount
+        saveDraft()
     }
     
     fun setAdditionAmount(amount: Double) {
         _additionAmount.value = amount
+        saveDraft()
     }
     
     fun setPrice(price: Double) {
         _price.value = price
+        saveDraft()
     }
     
     fun addEmptyWeight(weight: Double, crateCount: Int) {
@@ -183,6 +213,7 @@ class SaleInvoiceViewModel @Inject constructor(
             crateCount = crateCount
         )
         _emptyWeights.value = _emptyWeights.value + newWeight
+        saveDraft()
     }
     
     fun addGrossWeight(weight: Double, crateCount: Int) {
@@ -193,14 +224,17 @@ class SaleInvoiceViewModel @Inject constructor(
             crateCount = crateCount
         )
         _grossWeights.value = _grossWeights.value + newWeight
+        saveDraft()
     }
     
     fun removeEmptyWeight(weight: EmptyWeight) {
         _emptyWeights.value -= weight
+        saveDraft()
     }
     
     fun removeGrossWeight(weight: GrossWeight) {
         _grossWeights.value -= weight
+        saveDraft()
     }
     
     fun isInvoiceDateValid(): Boolean {
@@ -408,6 +442,72 @@ class SaleInvoiceViewModel @Inject constructor(
         _price.value = 0.0
         _emptyWeights.value = emptyList()
         _grossWeights.value = emptyList()
+        clearDraft()
+    }
+
+    private fun saveDraft() {
+        val editor = prefs.edit()
+        editor.putString(KEY_FARM_ID, _selectedFarm.value?.id)
+        editor.putString(KEY_CYCLE_ID, _selectedCycle.value?.id)
+        editor.putString(KEY_CUSTOMER_ID, _selectedCustomer.value?.id)
+        editor.putString(KEY_SAFE_ID, _selectedSafe.value?.id)
+        editor.putLong(KEY_INVOICE_DATE, _invoiceDate.value ?: -1L)
+        editor.putString(KEY_RECEIVE_AMOUNT, _receiveAmount.value.toString())
+        editor.putString(KEY_DISCOUNT_AMOUNT, _discountAmount.value.toString())
+        editor.putString(KEY_ADDITION_AMOUNT, _additionAmount.value.toString())
+        editor.putString(KEY_PRICE, _price.value.toString())
+        editor.putString(KEY_EMPTY_WEIGHTS, gson.toJson(_emptyWeights.value))
+        editor.putString(KEY_GROSS_WEIGHTS, gson.toJson(_grossWeights.value))
+        editor.apply()
+    }
+
+    private fun loadDraft() {
+        viewModelScope.launch {
+            val farmId = prefs.getString(KEY_FARM_ID, null)
+            val cycleId = prefs.getString(KEY_CYCLE_ID, null)
+            val customerId = prefs.getString(KEY_CUSTOMER_ID, null)
+            val safeId = prefs.getString(KEY_SAFE_ID, null)
+            val date = prefs.getLong(KEY_INVOICE_DATE, -1L)
+            val receive = prefs.getString(KEY_RECEIVE_AMOUNT, "0.0")?.toDoubleOrNull() ?: 0.0
+            val discount = prefs.getString(KEY_DISCOUNT_AMOUNT, "0.0")?.toDoubleOrNull() ?: 0.0
+            val addition = prefs.getString(KEY_ADDITION_AMOUNT, "0.0")?.toDoubleOrNull() ?: 0.0
+            val price = prefs.getString(KEY_PRICE, "0.0")?.toDoubleOrNull() ?: 0.0
+            
+            val emptyWeightsJson = prefs.getString(KEY_EMPTY_WEIGHTS, null)
+            val grossWeightsJson = prefs.getString(KEY_GROSS_WEIGHTS, null)
+
+            if (farmId != null) {
+                _selectedFarm.value = farmRepository.getFarmById(farmId)
+                loadCyclesByFarm(farmId)
+            }
+            if (cycleId != null) {
+                _selectedCycle.value = cycleRepository.getCycleById(cycleId)
+            }
+            if (customerId != null) {
+                _selectedCustomer.value = customerRepository.getCustomerById(customerId)
+            }
+            if (safeId != null) {
+                _selectedSafe.value = safeRepository.getSafeById(safeId)
+            }
+            if (date != -1L) _invoiceDate.value = date
+            _receiveAmount.value = receive
+            _discountAmount.value = discount
+            _additionAmount.value = addition
+            _price.value = price
+
+            if (emptyWeightsJson != null) {
+                val type = object : TypeToken<List<EmptyWeight>>() {}.type
+                _emptyWeights.value = gson.fromJson(emptyWeightsJson, type)
+            }
+            if (grossWeightsJson != null) {
+                val type = object : TypeToken<List<GrossWeight>>() {}.type
+                _grossWeights.value = gson.fromJson(grossWeightsJson, type)
+            }
+        }
+    }
+
+    private fun clearDraft() {
+        prefs.edit().clear().apply()
     }
     
     fun clearError() {
